@@ -1,10 +1,10 @@
 {
   "name": "tiddlywiki-plugin-dev",
   "author": "Sttot",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "./dist/index.js",
   "bin": {
-    "dev": "./dist/index.js"
+    "tiddlywiki-plugin-dev": "./dist/index.js"
   },
   "scripts": {
     "prepare": "modern build && husky install",
