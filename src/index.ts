@@ -20,7 +20,7 @@ program
   .command('build')
   .description('Build plugins for Modern.TiddlyDev')
   .option('--library', 'whether to build plugin library files', false)
-  .option('--output', 'set output directory', 'dist')
+  .option('--output <output>', 'set output directory', 'dist')
   .action(async ({ library, output }: { library: boolean; output: string }) => {
     if (library) {
       await buildLibrary(output);
