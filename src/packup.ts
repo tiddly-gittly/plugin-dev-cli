@@ -162,6 +162,9 @@ export const rebuild = async (
         ITiddlerFields
       >;
 
+      // 删除之前可能存在于 Wiki 的同名插件，以免被旧的覆盖掉
+      ($tw.wiki as any).deleteTiddler(plugin.title);
+
       // 过滤没有 .meta 且不带原信息的文件，这些文件的 title 都是绝对路径
       Object.keys(tiddlers).forEach(title => {
         if (title.startsWith('/') && fs.existsSync(title)) {

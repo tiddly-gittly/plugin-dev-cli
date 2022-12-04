@@ -20,11 +20,12 @@ program
   .command('build')
   .description('Build plugins for Modern.TiddlyDev')
   .option('--library', 'whether to build plugin library files', false)
-  .action(async ({ library }: { library: boolean }) => {
+  .option('--output', 'set output directory', 'dist')
+  .action(async ({ library, output }: { library: boolean; output: string }) => {
     if (library) {
-      await buildLibrary();
+      await buildLibrary(output);
     } else {
-      await build();
+      await build(output);
     }
     // eslint-disable-next-line no-process-exit
     process.exit(0);

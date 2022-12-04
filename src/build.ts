@@ -42,7 +42,7 @@ const waitForFile = (path: string) =>
     }, 100);
   });
 
-export const build = async () => {
+export const build = async (output: string) => {
   const $tw = tiddlywiki();
   const plugins = await rebuild($tw, 'src', undefined, false);
   const pluginJsons = new Map<string, string>();
@@ -50,7 +50,7 @@ export const build = async () => {
     const pluginTiddlerName = `${basename(
       ($tw.utils as any).generateTiddlerFilepath(plugin.title, {}),
     )}.json`;
-    const path = resolve('dist', pluginTiddlerName);
+    const path = resolve(output, pluginTiddlerName);
     mkdirsForFileSync(path);
     const jsonStr = JSON.stringify(plugin);
     pluginJsons.set(plugin.title, jsonStr);
@@ -60,7 +60,7 @@ export const build = async () => {
   return plugins;
 };
 
-export const buildLibrary = async () => {
+export const buildLibrary = async (output: string) => {
   const $tw = tiddlywiki();
   const plugins: Record<string, ITiddlerFields> = {};
   const pluginJsons = new Map<string, string>();
@@ -96,7 +96,7 @@ export const buildLibrary = async () => {
     ],
     'wiki',
     [
-      ...['--output', resolve('dist/library')] /* 指定输出路径 */,
+      ...['--output', resolve(output)] /* 指定输出路径 */,
       ...[
         '--savelibrarytiddlers',
         '$:/UpgradeLibrary',
@@ -123,7 +123,7 @@ export const buildLibrary = async () => {
   );
 
   // 最小化：HTML
-  const HTMLPath = resolve('dist/library', 'index.html');
+  const HTMLPath = resolve(output, 'index.html');
   // index.html 的生成是异步而无法控制，很烦
   await waitForFile(HTMLPath);
   const result = await htmlMinify(readFileSync(HTMLPath, 'utf-8'), {

@@ -57,7 +57,7 @@ export const runDev = async () => {
     .replace('$$$$port$$$$', `${port}`);
 
   // Watch source files change
-  let $tw = tiddlywiki();
+  let $tw = tiddlywiki([], 'wiki');
   let twServer: Server;
   const watcher = chokidar.watch('src', {
     ignoreInitial: true,
@@ -69,6 +69,9 @@ export const runDev = async () => {
     },
   });
   const refresh = async (path?: string) => {
+    ($tw.wiki as any).deleteTiddler(
+      '$:/Modern.TiddlyDev/devWebsocket/listener',
+    );
     const plugins = await rebuild($tw, 'src', path, true);
     $tw = tw.TiddlyWiki();
     $tw.boot.argv = ['wiki', '--listen'];
