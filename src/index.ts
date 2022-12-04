@@ -4,7 +4,7 @@ import { runDev } from './dev';
 import { build, buildLibrary } from './build';
 
 program
-  .name('@tiddlywiki/plugin-dev')
+  .name('tiddlywiki-plugin-dev')
   .description(
     'Tiddlywiki plugin development tool, working with https://github.com/tiddly-gittly/Modern.TiddlyDev',
   );

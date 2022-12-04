@@ -1,4 +1,8 @@
-# @tiddlywiki/plugin-dev
+# tiddlywiki-plugin-dev
+
+[![](https://img.shields.io/badge/Join-TiddlyWiki_CN-blue)](https://github.com/tiddly-gittly)
+
+[中文README](https://github.com/tiddly-gittly/plugin-dev-cli/blob/main/README-zh.md)
 
 Tiddlywiki plugin development tool, working with [Modern.TiddlyDev](https://github.com/tiddly-gittly/Modern.TiddlyDev).
 
@@ -11,13 +15,13 @@ This tool needs to be used with [Modern.TiddlyDev](https://github.com/tiddly-git
 ### help
 
 ```bash
-npx @tiddlywiki/plugin-dev help
+npx tiddlywiki-plugin-dev help
 ```
 
 output:
 
 ```
-Usage: @tiddlywiki/plugin-dev [options] [command]
+Usage: tiddlywiki-plugin-dev [options] [command]
 
 Options:
   -h, --help       display help for command
@@ -33,7 +37,7 @@ Commands:
 Start a TiddlyWiki server with your plugin(s) for test. It will always watch the file changes in the plugin folder(s) and refresh the browser page automatically.
 
 ```bash
-npx @tiddlywiki/plugin-dev dev
+npx tiddlywiki-plugin-dev dev
 ```
 
 output:
@@ -52,7 +56,7 @@ Serving on http://127.0.0.1:8080
 #### Build plugins alone
 
 ```bash
-npx @tiddlywiki/plugin-dev build
+npx tiddlywiki-plugin-dev build
 ```
 
 output:
@@ -68,8 +72,10 @@ Compiling...
 #### Build with a plugin library (publishing to your subscribers)
 
 ```bash
-npx @tiddlywiki/plugin-dev build --library
+npx tiddlywiki-plugin-dev build --library
 ```
+
+output:
 
 ```
 Compiling...
