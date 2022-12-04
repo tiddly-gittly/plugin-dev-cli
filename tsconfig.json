@@ -9,5 +9,6 @@
       "@style/*": ["./styles/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/esbuild-inject.ts", "src/**/*.js"]
 }
