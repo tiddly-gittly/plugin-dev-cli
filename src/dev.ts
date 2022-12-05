@@ -1,12 +1,13 @@
 import fs from 'fs';
 import path from 'path';
-import chokidar from 'chokidar';
 import tw from 'tiddlywiki';
-import { getPort } from 'get-port-please';
+import chokidar from 'chokidar';
 import { Server } from 'tw5-typed';
+import { getPort } from 'get-port-please';
 import { WebSocketServer, WebSocket } from 'ws';
-import { tiddlywiki } from './utils';
+
 import { rebuild } from './packup';
+import { tiddlywiki } from './utils';
 
 // WebSocket with TiddlyWiki on broswer
 const runServer = async () => {
@@ -57,44 +58,66 @@ export const runDev = async () => {
     .replace('$$$$port$$$$', `${port}`);
 
   // Watch source files change
-  let $tw = tiddlywiki([], 'wiki');
+  const $tw1 = tiddlywiki([], 'wiki');
   let twServer: Server;
   const watcher = chokidar.watch('src', {
     ignoreInitial: true,
     followSymlinks: true,
-    ignored: ($tw.boot as any).excludeRegExp,
+    ignored: ($tw1.boot as any).excludeRegExp,
     awaitWriteFinish: {
       stabilityThreshold: 1000,
       pollInterval: 100,
     },
   });
-  const refresh = async (path?: string) => {
-    ($tw.wiki as any).deleteTiddler(
-      '$:/Modern.TiddlyDev/devWebsocket/listener',
-    );
-    const plugins = await rebuild($tw, 'src', path, true);
-    $tw = tw.TiddlyWiki();
-    $tw.boot.argv = ['wiki', '--listen'];
-    $tw.preloadTiddler({
-      title: '$:/Modern.TiddlyDev/devWebsocket/listener',
-      text: devWebListnerScript,
-      type: 'application/javascript',
-      'module-type': 'startup',
+  let updateFiles: string[] | undefined;
+  const refresh = async (path: string) => {
+    // 因为 build 是异步的，这里给 refresh 加一个资源锁，否则会出现奇怪的问题
+    if (updateFiles !== undefined) {
+      updateFiles.push(path);
+      return;
+    } else {
+      updateFiles = [path];
+    }
+    while (updateFiles?.length) {
+      let resolve: (value: void | PromiseLike<void>) => void;
+      const wait = new Promise<void>(_resolve => (resolve = _resolve));
+      const tmp = updateFiles;
+      updateFiles = [];
+      ($tw1.wiki as any).deleteTiddler(
+        '$:/Modern.TiddlyDev/devWebsocket/listener',
+      );
+      const plugins = await rebuild($tw1, 'src', tmp, true);
+      const $tw = tw.TiddlyWiki();
+      $tw.boot.argv = ['wiki', '--listen'];
+      $tw.preloadTiddler({
+        title: '$:/Modern.TiddlyDev/devWebsocket/listener',
+        text: devWebListnerScript,
+        type: 'application/javascript',
+        'module-type': 'startup',
+      });
+      $tw.preloadTiddlerArray(plugins);
+      $tw.hooks.addHook(
+        'th-server-command-post-start',
+        // eslint-disable-next-line @typescript-eslint/no-loop-func
+        (_listenCommand, newTwServer) => {
+          newTwServer.on('listening', () => resolve());
+          twServer = newTwServer;
+        },
+      );
+      if (twServer) {
+        twServer.on('close', () => $tw.boot.boot());
+        twServer.close();
+      } else {
+        $tw.boot.boot();
+      }
+      await wait;
+    }
+    server.clients.forEach(ws => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send('refresh');
+      }
     });
-    $tw.preloadTiddlerArray(plugins);
-    $tw.hooks.addHook(
-      'th-server-command-post-start',
-      (_listenCommand, newTwServer) => {
-        twServer = newTwServer;
-        server.clients.forEach(ws => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send('refresh');
-          }
-        });
-      },
-    );
-    twServer?.close?.();
-    $tw.boot.boot();
+    updateFiles = undefined;
   };
   watcher.on('ready', refresh);
   watcher.on('add', refresh);

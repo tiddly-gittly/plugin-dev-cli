@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import sha256 from 'sha256';
 import esbuild from 'esbuild';
+import { uniq } from 'lodash';
 import UglifyJS from 'uglify-js';
 import CleanCSS from 'clean-css';
 import colors from 'ansi-colors';
@@ -86,7 +87,7 @@ const minifyTiddler = (tiddler: ITiddlerFields) => {
   return tiddler;
 };
 
-export const walkFilesSync = (
+const walkFilesSync = (
   dir: string,
   callback: (filepath: string, stats: fs.Stats) => void,
 ) => {
@@ -103,7 +104,7 @@ export const walkFilesSync = (
 export const rebuild = async (
   $tw: ITiddlyWiki,
   pluginsDir: string,
-  updatePath?: string,
+  updatePaths: string[] = [],
   devMode = true,
 ): Promise<ITiddlerFields[]> => {
   const baseDir = path.resolve(pluginsDir);
@@ -126,7 +127,11 @@ export const rebuild = async (
       tmp.length - 1,
     )}/`,
   );
-  const updateDir = updatePath ? path.resolve(path.dirname(updatePath)) : '';
+  const updateDirs = uniq(
+    updatePaths
+      .filter(file => file)
+      .map(file => path.resolve(path.dirname(file))),
+  );
   const pluginDirs = fs
     .readdirSync(baseDir)
     .map(dirname => path.resolve(baseDir, dirname))
@@ -137,7 +142,9 @@ export const rebuild = async (
       bar.update(index, { plugin: path.basename(dir) });
       // 检查插件是否被修改过，缓存
       const update =
-        updateDir.startsWith(dir) || !pluginCache.hasOwnProperty(dir);
+        !pluginCache.hasOwnProperty(dir) ||
+        updateDirs.length === 0 ||
+        updateDirs.some(updateDir => updateDir.startsWith(dir));
       if (!update) {
         bar.update(index + 1, { plugin: path.basename(dir) });
         return pluginCache[dir];
