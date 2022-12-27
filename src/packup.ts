@@ -244,7 +244,11 @@ export const rebuild = async (
       });
       // 格式化并保存编译结果
       outputFiles.forEach(file => {
-        const output = metafile!.outputs[path.relative(rootPath, file.path)];
+        // esbuild 的 matadata 路径无论是 windows 还是 POSIX 都是以 / 为分隔符，因此要额外处理
+        const output =
+          metafile!.outputs[
+            path.relative(rootPath, file.path).split(path.sep).join('/')
+          ];
         let meta: ITiddlerFields = {} as any;
         if (output.entryPoint) {
           // 入口，一定是源代码文件

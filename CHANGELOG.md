@@ -1,5 +1,11 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.10
+
+### Patch Changes
+
+- fix path calculate issue on windows
+
 ## 0.0.9
 
 ### Patch Changes
