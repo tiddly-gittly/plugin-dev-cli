@@ -182,7 +182,7 @@ export const rebuild = async (
       // 检索编译入口
       const entryPoints: string[] = [];
       const metaMap = new Map<string, ITiddlerFields>();
-      walkFilesSync(baseDir, filepath => {
+      walkFilesSync(dir, filepath => {
         const meta = ($tw as any).loadMetadataForFile(
           filepath,
         ) as ITiddlerFields | null;

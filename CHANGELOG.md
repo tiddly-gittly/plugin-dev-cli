@@ -1,5 +1,11 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.11
+
+### Patch Changes
+
+- fix issue that build may container another plugins' scripts
+
 ## 0.0.10
 
 ### Patch Changes

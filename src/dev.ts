@@ -88,7 +88,6 @@ export const runDev = async () => {
       );
       const plugins = await rebuild($tw1, 'src', tmp, true);
       const $tw = tw.TiddlyWiki();
-      $tw.boot.argv = ['wiki', '--listen'];
       $tw.preloadTiddler({
         title: '$:/Modern.TiddlyDev/devWebsocket/listener',
         text: devWebListnerScript,
@@ -104,11 +103,16 @@ export const runDev = async () => {
           twServer = newTwServer;
         },
       );
+      const serve = async () => {
+        const port = await getPort({ port: 8080 });
+        $tw.boot.argv = ['wiki', '--listen', `port=${port}`];
+        $tw.boot.boot();
+      };
       if (twServer) {
-        twServer.on('close', () => $tw.boot.boot());
+        twServer.on('close', serve);
         twServer.close();
       } else {
-        $tw.boot.boot();
+        serve();
       }
       await wait;
     }
