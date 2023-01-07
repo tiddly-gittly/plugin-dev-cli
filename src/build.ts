@@ -1,6 +1,6 @@
 import { basename, resolve } from 'path';
 import { writeFileSync, readFileSync } from 'fs';
-import colors from 'ansi-colors';
+import chalk from 'chalk';
 import { ITiddlerFields } from 'tw5-typed';
 import { minify as htmlMinify } from 'html-minifier-terser';
 import { rebuild } from './packup';
@@ -8,7 +8,7 @@ import { tiddlywiki, mkdirsForFileSync, waitForFile } from './utils';
 
 const printPlugins = (plugins: Map<string, string>) => {
   // eslint-disable-next-line no-console
-  console.log(colors.bgCyan.black.bold(' Minimized plugins '));
+  console.log(chalk.bgCyan.black.bold(' Minimized plugins '));
   plugins.forEach((plugin, title) => {
     let size = plugin.length;
     let unit = 'B  ';
@@ -22,7 +22,7 @@ const printPlugins = (plugins: Map<string, string>) => {
     }
     const sizeFormatted = `${size.toFixed(2)} ${unit}`.padStart(11);
     // eslint-disable-next-line no-console
-    console.log(colors.cyan(`${sizeFormatted}   ${title}`));
+    console.log(chalk.cyan(`${sizeFormatted}   ${title}`));
   });
   // eslint-disable-next-line no-console
   console.log('');
@@ -74,7 +74,7 @@ export const buildLibrary = async (output: string) => {
   printPlugins(pluginJsons);
   const pluginPaths = $tw.getLibraryItemSearchPaths($tw.config.pluginsPath);
   // eslint-disable-next-line no-console
-  console.log(colors.green.bold('Generating plugin library...'));
+  console.log(chalk.green.bold('Generating plugin library...'));
   tiddlywiki(
     [
       /* 收集所有已安装插件 */

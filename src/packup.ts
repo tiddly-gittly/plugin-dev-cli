@@ -1,11 +1,11 @@
 import fs from 'fs';
 import path from 'path';
+import chalk from 'chalk';
 import sha256 from 'sha256';
 import esbuild from 'esbuild';
 import { uniq } from 'lodash';
 import UglifyJS from 'uglify-js';
 import CleanCSS from 'clean-css';
-import colors from 'ansi-colors';
 import cliProgress from 'cli-progress';
 import browserslist from 'browserslist';
 import { ITiddlerFields, ITiddlyWiki } from 'tw5-typed';
@@ -99,10 +99,10 @@ export const rebuild = async (
     return [];
   }
   // eslint-disable-next-line no-console
-  console.log(colors.green.bold('Compiling...'));
+  console.log(chalk.green.bold('Compiling...'));
   const bar = new cliProgress.SingleBar(
     {
-      format: `${colors.green('{bar}')} {percentage}% | {plugin}`,
+      format: `${chalk.green('{bar}')} {percentage}% | {plugin}`,
       stopOnComplete: true,
     },
     cliProgress.Presets.shades_classic,

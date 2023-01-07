@@ -1,5 +1,47 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.19
+
+### Patch Changes
+
+- add --wiki-path for publish
+
+## 0.0.18
+
+### Patch Changes
+
+- fix
+
+## 0.0.17
+
+### Patch Changes
+
+- output for init
+
+## 0.0.16
+
+### Patch Changes
+
+- fix command
+
+## 0.0.15
+
+### Patch Changes
+
+- fix chalk
+
+## 0.0.14
+
+### Patch Changes
+
+- add init/new/publish
+
+## 0.0.13
+
+### Patch Changes
+
+- fix import issue
+
 ## 0.0.12
 
 ### Patch Changes
