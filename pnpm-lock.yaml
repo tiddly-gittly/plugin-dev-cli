@@ -28,9 +28,9 @@ specifiers:
   prettier: ^2.6.2
   rimraf: ^3.0.2
   sha256: ^0.2.0
-  tiddlywiki: ^5.1.23
+  tiddlywiki: latest
   ts-node: ^10.9.1
-  tw5-typed: ^0.2.7
+  tw5-typed: latest
   typescript: ^4
   uglify-js: ^3.15.4
   ws: ^8.6.0
@@ -48,7 +48,6 @@ dependencies:
   html-minifier-terser: registry.npmmirror.com/html-minifier-terser/7.1.0
   lodash: registry.npmmirror.com/lodash/4.17.21
   sha256: registry.npmmirror.com/sha256/0.2.0
-  tiddlywiki: registry.npmmirror.com/tiddlywiki/5.2.3
   uglify-js: registry.npmmirror.com/uglify-js/3.17.4
   ws: registry.npmmirror.com/ws/8.11.0
 
@@ -68,8 +67,9 @@ devDependencies:
   lint-staged: registry.npmmirror.com/lint-staged/11.2.6
   prettier: registry.npmmirror.com/prettier/2.8.0
   rimraf: registry.npmmirror.com/rimraf/3.0.2
+  tiddlywiki: registry.npmmirror.com/tiddlywiki/5.2.5
   ts-node: registry.npmmirror.com/ts-node/10.9.1_eoe7put6ewfbqpy6gs36tihw6y
-  tw5-typed: registry.npmmirror.com/tw5-typed/0.2.10
+  tw5-typed: registry.npmmirror.com/tw5-typed/0.2.16
   typescript: registry.npmmirror.com/typescript/4.9.3
 
 packages:
@@ -13182,13 +13182,13 @@ packages:
     version: 2.3.8
     dev: true
 
-  registry.npmmirror.com/tiddlywiki/5.2.3:
-    resolution: {integrity: sha512-kf09XBI0bswr27pM6WBj/Vek4ATle83HwAtg8rPqJ8cjcC2/xX2SLEamiT8q4AAexjDDlQA05IlcPhhGtF0j6A==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/tiddlywiki/-/tiddlywiki-5.2.3.tgz}
+  registry.npmmirror.com/tiddlywiki/5.2.5:
+    resolution: {integrity: sha512-Xfq9NHxAwg2UvCimbtZWWqZyfUpVyq1w+tfb0vMrx3wyWK3VZD1hogJTN1a5qBNyvD9d+WmpZkCw/xN5smRzLQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/tiddlywiki/-/tiddlywiki-5.2.5.tgz}
     name: tiddlywiki
-    version: 5.2.3
+    version: 5.2.5
     engines: {node: '>=0.8.2'}
     hasBin: true
-    dev: false
+    dev: true
     bundledDependencies: []
 
   registry.npmmirror.com/timers-browserify/2.0.12:
@@ -13425,10 +13425,10 @@ packages:
       yargs: registry.npmmirror.com/yargs/17.6.2
     dev: true
 
-  registry.npmmirror.com/tw5-typed/0.2.10:
-    resolution: {integrity: sha512-gzTWvnFk/CRYScu476+qoIzk5IekHB/Ft0kqhorw42kl1qlCZtx700bh9EjxHVkwdm1VcC7JGT96ljBH46Z0iQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/tw5-typed/-/tw5-typed-0.2.10.tgz}
+  registry.npmmirror.com/tw5-typed/0.2.16:
+    resolution: {integrity: sha512-i6BE8QkHpdkw+Dvc8HeENKMwCns9/TuCTGCaUDq7kkAnTpgsAn8GY3vvYoVI/BZF6G3Q7hGphwBuyt9XqjE3qw==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/tw5-typed/-/tw5-typed-0.2.16.tgz}
     name: tw5-typed
-    version: 0.2.10
+    version: 0.2.16
     dev: true
 
   registry.npmmirror.com/type-check/0.3.2:

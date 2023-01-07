@@ -31,3 +31,6 @@ program
     process.exit(0);
   });
 program.parse();
+
+export * from './utils';
+export { build, buildLibrary };

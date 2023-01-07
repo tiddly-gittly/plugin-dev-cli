@@ -54,7 +54,7 @@ const runServer = async () => {
 export const runDev = async () => {
   const { server, port } = await runServer();
   const devWebListnerScript = fs
-    .readFileSync(path.resolve(__dirname, 'js/src/devweb-listener.js'), 'utf-8')
+    .readFileSync(path.resolve(__dirname, 'src/devweb-listener.js'), 'utf-8')
     .replace('$$$$port$$$$', `${port}`);
 
   // Watch source files change
@@ -63,7 +63,7 @@ export const runDev = async () => {
   const watcher = chokidar.watch('src', {
     ignoreInitial: true,
     followSymlinks: true,
-    ignored: ($tw1.boot as any).excludeRegExp,
+    ignored: $tw1.boot.excludeRegExp,
     awaitWriteFinish: {
       stabilityThreshold: 1000,
       pollInterval: 100,
@@ -83,9 +83,7 @@ export const runDev = async () => {
       const wait = new Promise<void>(_resolve => (resolve = _resolve));
       const tmp = updateFiles;
       updateFiles = [];
-      ($tw1.wiki as any).deleteTiddler(
-        '$:/Modern.TiddlyDev/devWebsocket/listener',
-      );
+      $tw1.wiki.deleteTiddler('$:/Modern.TiddlyDev/devWebsocket/listener');
       const plugins = await rebuild($tw1, 'src', tmp, true);
       const $tw = tw.TiddlyWiki();
       $tw.preloadTiddler({

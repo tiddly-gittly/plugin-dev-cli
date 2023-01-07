@@ -10,6 +10,7 @@ import cliProgress from 'cli-progress';
 import browserslist from 'browserslist';
 import { ITiddlerFields, ITiddlyWiki } from 'tw5-typed';
 import { esbuildPluginBrowserslist } from 'esbuild-plugin-browserslist';
+import { walkFilesSync } from './utils';
 
 const nodejsBuiltinModules = [
   'assert',
@@ -87,20 +88,6 @@ const minifyTiddler = (tiddler: ITiddlerFields) => {
   return tiddler;
 };
 
-const walkFilesSync = (
-  dir: string,
-  callback: (filepath: string, stats: fs.Stats) => void,
-) => {
-  const stats = fs.statSync(dir);
-  if (stats.isFile()) {
-    callback(dir, stats);
-  } else {
-    fs.readdirSync(dir).forEach(item =>
-      walkFilesSync(path.resolve(dir, item), callback),
-    );
-  }
-};
-
 export const rebuild = async (
   $tw: ITiddlyWiki,
   pluginsDir: string,
@@ -120,7 +107,7 @@ export const rebuild = async (
     },
     cliProgress.Presets.shades_classic,
   );
-  const tmp = ($tw.boot as any).excludeRegExp.toString();
+  const tmp = $tw.boot.excludeRegExp.toString();
   const filterExp = new RegExp(
     `/^.*\\.tsx?$|^.*\\.cjs?$|^.*\\.mjs?$|^.*\\.jsx?$|${tmp.substring(
       1,
@@ -151,10 +138,7 @@ export const rebuild = async (
       }
 
       // 读取非编译内容
-      const plugin: ITiddlerFields = ($tw as any).loadPluginFolder(
-        dir,
-        filterExp,
-      );
+      const plugin = $tw.loadPluginFolder(dir, filterExp)!;
 
       // 编译选项
       const browserslistStr = (plugin['Modern.TiddlyDev::BrowsersList'] ??
@@ -170,7 +154,7 @@ export const rebuild = async (
       >;
 
       // 删除之前可能存在于 Wiki 的同名插件，以免被旧的覆盖掉
-      ($tw.wiki as any).deleteTiddler(plugin.title);
+      $tw.wiki.deleteTiddler(plugin.title);
 
       // 过滤没有 .meta 且不带原信息的文件，这些文件的 title 都是绝对路径
       Object.keys(tiddlers).forEach(title => {
@@ -183,9 +167,7 @@ export const rebuild = async (
       const entryPoints: string[] = [];
       const metaMap = new Map<string, ITiddlerFields>();
       walkFilesSync(dir, filepath => {
-        const meta = ($tw as any).loadMetadataForFile(
-          filepath,
-        ) as ITiddlerFields | null;
+        const meta = $tw.loadMetadataForFile(filepath);
         if (!meta) {
           return;
         }

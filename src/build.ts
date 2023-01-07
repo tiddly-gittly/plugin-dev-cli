@@ -1,13 +1,10 @@
 import { basename, resolve } from 'path';
-import { writeFileSync, readFileSync, existsSync } from 'fs';
+import { writeFileSync, readFileSync } from 'fs';
 import colors from 'ansi-colors';
 import { ITiddlerFields } from 'tw5-typed';
 import { minify as htmlMinify } from 'html-minifier-terser';
 import { rebuild } from './packup';
-import { tiddlywiki, mkdirsForFileSync } from './utils';
-
-const sleep = (millionseconds: number) =>
-  new Promise<void>(resolve => setTimeout(() => resolve(), millionseconds));
+import { tiddlywiki, mkdirsForFileSync, waitForFile } from './utils';
 
 const printPlugins = (plugins: Map<string, string>) => {
   // eslint-disable-next-line no-console
@@ -31,35 +28,40 @@ const printPlugins = (plugins: Map<string, string>) => {
   console.log('');
 };
 
-const waitForFile = (path: string) =>
-  new Promise<void>(resolve => {
-    const id = setInterval(() => {
-      resolve();
-      if (existsSync(path)) {
-        resolve();
-        clearInterval(id);
-      }
-    }, 100);
-  });
-
-export const build = async (output: string) => {
+/**
+ * 构建插件
+ *
+ * @async
+ * @param {string} [output] 插件输出的路径，不填则只构建但不保存
+ * @return {Promise<ITiddlerFields[]>} 构建好的插件
+ */
+export const build = async (output?: string) => {
   const $tw = tiddlywiki();
   const plugins = await rebuild($tw, 'src', undefined, false);
   const pluginJsons = new Map<string, string>();
   plugins.forEach(plugin => {
     const pluginTiddlerName = `${basename(
-      ($tw.utils as any).generateTiddlerFilepath(plugin.title, {}),
+      $tw.utils.generateTiddlerFilepath(plugin.title, {}),
     )}.json`;
-    const path = resolve(output, pluginTiddlerName);
-    mkdirsForFileSync(path);
     const jsonStr = JSON.stringify(plugin);
     pluginJsons.set(plugin.title, jsonStr);
-    writeFileSync(path, jsonStr);
+    if (output) {
+      const path = resolve(output, pluginTiddlerName);
+      mkdirsForFileSync(path);
+      writeFileSync(path, jsonStr);
+    }
   });
   printPlugins(pluginJsons);
   return plugins;
 };
 
+/**
+ * 构建插件库
+ *
+ * @async
+ * @param {string} output 插件库输出的路径
+ * @return {Promise<ITiddlerFields[]>} 构建好的插件
+ */
 export const buildLibrary = async (output: string) => {
   const $tw = tiddlywiki();
   const plugins: Record<string, ITiddlerFields> = {};
@@ -70,9 +72,7 @@ export const buildLibrary = async (output: string) => {
     plugins[plugin.title] = plugin;
   });
   printPlugins(pluginJsons);
-  const pluginPath = ($tw as any).getLibraryItemSearchPaths(
-    $tw.config.pluginsPath,
-  );
+  const pluginPaths = $tw.getLibraryItemSearchPaths($tw.config.pluginsPath);
   // eslint-disable-next-line no-console
   console.log(colors.green.bold('Generating plugin library...'));
   tiddlywiki(
@@ -88,10 +88,11 @@ export const buildLibrary = async (output: string) => {
         'tiddlywiki/filesystem',
         'tiddlywiki/tiddlyweb',
         'tiddlywiki/pluginlibrary',
-      ].map(pluginName =>
-        ($tw as any).loadPluginFolder(
-          ($tw as any).findLibraryItem(pluginName, pluginPath),
-        ),
+      ].map(
+        pluginName =>
+          $tw.loadPluginFolder(
+            $tw.findLibraryItem(pluginName, pluginPaths as any)!,
+          )!,
       ),
     ],
     'wiki',
@@ -162,5 +163,5 @@ export const buildLibrary = async (output: string) => {
     useShortDoctype: true,
   });
   writeFileSync(HTMLPath, result);
-  await sleep(1000);
+  return plugins;
 };

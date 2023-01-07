@@ -1,5 +1,11 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.12
+
+### Patch Changes
+
+- export build function
+
 ## 0.0.11
 
 ### Patch Changes
