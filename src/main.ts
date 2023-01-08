@@ -43,9 +43,17 @@ program
   .command('init')
   .description('Create a Modern.TiddlyDev project')
   .argument('<project>', 'Direction name of project')
-  .action(async (project: string) => {
-    await init(project);
-  });
+  .option('--repo <github-url>', 'Magic for China mainland user', undefined)
+  .option('--npm <npm-url>', 'Magic for China mainland user', undefined)
+  .action(
+    async (project: string, { repo, npm }: { repo?: string; npm?: string }) => {
+      await init(
+        project,
+        repo || 'https://github.com/tiddly-gittly/Modern.TiddlyDev.git',
+        npm,
+      );
+    },
+  );
 program
   .command('publish')
   .description('Publish wiki')
@@ -55,11 +63,7 @@ program
     'Filter to exclude publishing tiddlers',
     '-[is[draft]]',
   )
-  .option(
-    '--offline',
-    'Generate single wiki file, with an external core js file',
-    false,
-  )
+  .option('--offline', 'Generate single wiki file', false)
   .option(
     '--html <html-file>',
     'File name of generated index html file',
@@ -71,20 +75,20 @@ program
       dist: string,
       {
         offline,
-        excludeFilter,
-        htmlFile,
-        wikiPath,
+        exclude,
+        html,
+        wiki,
       }: {
         offline: boolean;
-        excludeFilter: string;
-        htmlFile: string;
-        wikiPath: string;
+        exclude: string;
+        html: string;
+        wiki: string;
       },
     ) => {
       if (offline) {
-        await publishOfflineHTML(wikiPath, dist, htmlFile, excludeFilter);
+        await publishOfflineHTML(wiki, dist, html, exclude);
       } else {
-        await publishOnlineHTML(wikiPath, dist, htmlFile, excludeFilter);
+        await publishOnlineHTML(wiki, dist, html, exclude);
       }
       // eslint-disable-next-line no-process-exit
       process.exit(0);

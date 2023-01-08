@@ -5,7 +5,11 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import simpleGitt from 'simple-git';
 
-export const init = async (project: string) => {
+export const init = async (
+  project: string,
+  githubUrl: string,
+  npmUrl?: string,
+) => {
   if (fs.existsSync(project)) {
     console.error(`${project} already exists!`);
     return;
@@ -20,15 +24,25 @@ export const init = async (project: string) => {
     },
   ]);
   // eslint-disable-next-line no-console
-  console.log(chalk.green.bold('Cloning template project...'));
+  console.log(chalk.green.bold(`Cloning template project from ${githubUrl}`));
   // pull template
-  await simpleGitt().clone(
-    'https://github.com/tiddly-gittly/Modern.TiddlyDev.git',
-    project,
-    ['--depth=1', '-b', 'template'],
-  );
+  await simpleGitt().clone(githubUrl, project, ['--depth=1', '-b', 'template']);
   await simpleGitt({
     baseDir: path.resolve(project),
   }).removeRemote('origin');
+  if (npmUrl) {
+    fs.writeFileSync(
+      path.resolve(project, '.npmrc'),
+      `${fs.readFileSync(
+        path.resolve(project, '.npmrc'),
+        'utf8',
+      )}\nregistry=${npmUrl}`,
+    );
+  }
+  execSync(`${npm} install`, { cwd: path.resolve(project), stdio: 'inherit' });
+  execSync(`${npm} run update`, {
+    cwd: path.resolve(project),
+    stdio: 'inherit',
+  });
   execSync(`${npm} install`, { cwd: path.resolve(project), stdio: 'inherit' });
 };

@@ -1,5 +1,23 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.22
+
+### Patch Changes
+
+- stable version
+
+## 0.0.21
+
+### Patch Changes
+
+- fix
+
+## 0.0.20
+
+### Patch Changes
+
+- add some magic
+
 ## 0.0.19
 
 ### Patch Changes
