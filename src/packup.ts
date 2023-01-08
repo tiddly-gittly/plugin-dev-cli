@@ -57,7 +57,7 @@ const UglifyJSOption = {
 };
 
 const cleanCSS = new CleanCSS({
-  compatibility: 'ie8',
+  compatibility: 'ie9',
   level: 2,
 });
 
@@ -141,13 +141,13 @@ export const rebuild = async (
       const plugin = $tw.loadPluginFolder(dir, filterExp)!;
 
       // 编译选项
-      const browserslistStr = (plugin['Modern.TiddlyDev::BrowsersList'] ??
+      const browserslistStr = (plugin['Modern.TiddlyDev#BrowsersList'] ??
         '>0.25%, not ie 11, not op_mini all') as string;
       const externalModules = $tw.utils.parseStringArray(
-        (plugin['Modern.TiddlyDev::ExternalModules'] as string) ?? '',
+        (plugin['Modern.TiddlyDev#ExternalModules'] as string) ?? '',
       );
-      const sourceMap = plugin['Modern.TiddlyDev::SourceMap'] === true;
-      const minifyPlugin = plugin['Modern.TiddlyDev::Minify'] !== false;
+      const sourceMap = plugin['Modern.TiddlyDev#SourceMap'] === true;
+      const minifyPlugin = plugin['Modern.TiddlyDev#Minify'] !== false;
       const tiddlers = JSON.parse(plugin.text).tiddlers as Record<
         string,
         ITiddlerFields
@@ -167,7 +167,7 @@ export const rebuild = async (
       const entryPoints: string[] = [];
       const metaMap = new Map<string, ITiddlerFields>();
       walkFilesSync(dir, filepath => {
-        const meta = $tw.loadMetadataForFile(filepath);
+        let meta = $tw.loadMetadataForFile(filepath);
         if (!meta) {
           return;
         }
@@ -177,17 +177,66 @@ export const rebuild = async (
             path.extname(filepath).toLowerCase(),
           )
         ) {
-          if (meta['Modern.TiddlyDev::NoCompile'] !== 'true') {
-            entryPoints.push(filepath);
-          }
-          if (meta['Modern.TiddlyDev::IncludeSource'] === 'true') {
-            entryPoints.push(filepath);
+          if (meta['Modern.TiddlyDev#IncludeSource'] === 'true') {
             tiddlers[meta.title] = {
               ...meta,
               text: fs.readFileSync(filepath, 'utf-8'),
+              'module-type': undefined,
             };
+            if (meta['Modern.TiddlyDev#NoCompile'] !== 'true') {
+              // 编译 + 保留源文件
+              entryPoints.push(filepath);
+              const titlePath = meta.title.split('/');
+              const parts = titlePath[titlePath.length - 1].split('.');
+              if (
+                parts.length < 2 ||
+                parts[parts.length - 1].toLowerCase() === 'js' ||
+                !['ts', 'tsx', 'cjs', 'mjs', 'jsx'].includes(
+                  parts[parts.length - 1].toLowerCase(),
+                )
+              ) {
+                parts.push('js');
+              } else {
+                parts[parts.length - 1] = 'js';
+              }
+              titlePath[titlePath.length - 1] = parts.join('.');
+              meta = {
+                ...meta,
+                title: titlePath.join('/'),
+              };
+            } else {
+              // 不编译 + 保留原文件
+              // do nothing
+            }
+          } else {
+            delete tiddlers[meta.title];
+            if (meta['Modern.TiddlyDev#NoCompile'] !== 'true') {
+              // 编译 + 不保留原文件
+              entryPoints.push(filepath);
+              const titlePath = meta.title.split('/');
+              const parts = titlePath[titlePath.length - 1].split('.');
+              if (
+                parts.length < 2 ||
+                !['js', 'ts', 'tsx', 'cjs', 'mjs', 'jsx'].includes(
+                  parts[parts.length - 1].toLowerCase(),
+                )
+              ) {
+                parts.push('js');
+              } else {
+                parts[parts.length - 1] = 'js';
+              }
+              titlePath[titlePath.length - 1] = parts.join('.');
+              meta = {
+                ...meta,
+                title: titlePath.join('/'),
+              };
+            } else {
+              // 不编译 + 不保留原文件
+              // do nothing
+            }
           }
         }
+        metaMap.set(filepath, meta);
       });
       // 编译
       const { outputFiles, metafile } = await esbuild.build({
@@ -240,7 +289,7 @@ export const rebuild = async (
             meta = {
               ...metaMap.get(resolved)!,
               type: 'application/javascript',
-              'Modern.TiddlyDev::Origin': relatived,
+              'Modern.TiddlyDev#Origin': relatived,
             };
           } else {
             // 应该不存在这种情况
@@ -261,7 +310,7 @@ export const rebuild = async (
               tags: type === 'text/css' ? ['$:/tags/Stylesheet'] : [],
               ...(metaMap.get(resolved) ?? {}),
               type,
-              'Modern.TiddlyDev::Origin': relatived,
+              'Modern.TiddlyDev#Origin': relatived,
             } as ITiddlerFields;
           }
           if (!meta.title) {
@@ -300,7 +349,7 @@ export const rebuild = async (
 
       // 哈希校验
       if (!devMode) {
-        (pluginCache[dir] as any)['Modern.TiddlyDev::SHA256-Hashed'] = sha256(
+        (pluginCache[dir] as any)['Modern.TiddlyDev#SHA256-Hashed'] = sha256(
           JSON.stringify(pluginCache[dir]),
         );
       }

@@ -33,10 +33,15 @@ export const init = async (
   if (npmUrl) {
     fs.writeFileSync(
       path.resolve(project, '.npmrc'),
-      `${fs.readFileSync(
-        path.resolve(project, '.npmrc'),
-        'utf8',
-      )}\nregistry=${npmUrl}`,
+      [
+        ...fs
+          .readFileSync(path.resolve(project, '.npmrc'), 'utf-8')
+          .split('\n'),
+        `registry=${npmUrl}`,
+      ]
+        .map(line => line.trim())
+        .filter(line => line !== '')
+        .join('\n'),
     );
   }
   execSync(`${npm} install`, { cwd: path.resolve(project), stdio: 'inherit' });
