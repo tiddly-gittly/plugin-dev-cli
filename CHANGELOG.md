@@ -1,5 +1,11 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.27
+
+### Patch Changes
+
+- ignore when plugin folder does not have plugin.info
+
 ## 0.0.26
 
 ### Patch Changes

@@ -131,7 +131,13 @@ export const rebuild = async (
       }
 
       // 读取非编译内容
+      if (!fs.existsSync(path.resolve(dir, 'plugin.info'))) {
+        return undefined;
+      }
       const plugin = $tw.loadPluginFolder(dir)!;
+      if (!plugin?.title) {
+        return undefined;
+      }
 
       // 编译选项
       const browserslistStr = (plugin['Modern.TiddlyDev#BrowsersList'] ??
@@ -356,5 +362,5 @@ export const rebuild = async (
   // eslint-disable-next-line no-console
   console.log('');
 
-  return plugins;
+  return plugins.filter(plugin => plugin !== undefined) as ITiddlerFields[];
 };
