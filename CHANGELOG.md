@@ -1,5 +1,23 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.26
+
+### Patch Changes
+
+- can decide whether to monify some .css / .js
+
+## 0.0.25
+
+### Patch Changes
+
+- packup now include all mjs, tsx, cjs, jsx, ts and js files
+
+## 0.0.24
+
+### Patch Changes
+
+- fix new command
+
 ## 0.0.23
 
 ### Patch Changes

@@ -44,7 +44,7 @@ export const createPlugin = async () => {
   } else {
     fs.mkdirSync(pluginPath);
   }
-  const pluginTitle = `$:/${pluginType}/${authorName}/${pluginName}`;
+  const pluginTitle = `$:/${pluginType}s/${authorName}/${pluginName}`;
   fs.writeFileSync(
     path.resolve(pluginPath, 'plugin.info'),
     JSON.stringify(

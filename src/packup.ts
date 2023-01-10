@@ -107,13 +107,6 @@ export const rebuild = async (
     },
     cliProgress.Presets.shades_classic,
   );
-  const tmp = $tw.boot.excludeRegExp.toString();
-  const filterExp = new RegExp(
-    `/^.*\\.tsx?$|^.*\\.cjs?$|^.*\\.mjs?$|^.*\\.jsx?$|${tmp.substring(
-      1,
-      tmp.length - 1,
-    )}/`,
-  );
   const updateDirs = uniq(
     updatePaths
       .filter(file => file)
@@ -138,7 +131,7 @@ export const rebuild = async (
       }
 
       // 读取非编译内容
-      const plugin = $tw.loadPluginFolder(dir, filterExp)!;
+      const plugin = $tw.loadPluginFolder(dir)!;
 
       // 编译选项
       const browserslistStr = (plugin['Modern.TiddlyDev#BrowsersList'] ??
@@ -337,9 +330,11 @@ export const rebuild = async (
 
       // 最小化
       if (!devMode && minifyPlugin) {
-        Object.keys(tiddlers).forEach(
-          title => (tiddlers[title] = minifyTiddler(tiddlers[title])),
-        );
+        Object.keys(tiddlers).forEach(title => {
+          if (tiddlers[title]['Modern.TiddlyDev#Minify'] !== 'false') {
+            tiddlers[title] = minifyTiddler(tiddlers[title]);
+          }
+        });
       }
 
       pluginCache[dir] = {
