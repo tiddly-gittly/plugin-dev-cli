@@ -26,10 +26,16 @@ export const init = async (
   // eslint-disable-next-line no-console
   console.log(chalk.green.bold(`Cloning template project from ${githubUrl}`));
   // pull template
-  await simpleGitt().clone(githubUrl, project, ['--depth=1', '-b', 'template']);
-  await simpleGitt({
+  await simpleGitt().clone(githubUrl, project, ['-b', 'template']);
+  const git = simpleGitt({
     baseDir: path.resolve(project),
-  }).removeRemote('origin');
+  });
+  await git.removeRemote('origin');
+  await git.branch(['-m', 'template', 'master']);
+  const shallowPath = path.resolve(project, '.git', 'shallow');
+  if (fs.existsSync(shallowPath)) {
+    fs.rmSync(path.resolve(project, '.git', 'shallow'));
+  }
   if (npmUrl) {
     fs.writeFileSync(
       path.resolve(project, '.npmrc'),

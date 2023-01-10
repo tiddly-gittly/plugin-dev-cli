@@ -24,11 +24,11 @@ export const publishOnlineHTML = async (
   dist = 'dist',
   htmlName = 'index.html',
   excludeFilter = '-[is[draft]]',
+  library = true,
 ) => {
   // 构建插件库，导出插件
   const wikiFolder = path.resolve(wikiPath);
   const distDir = path.resolve(dist);
-  const plugins = await buildLibrary(path.join(dist, 'library'));
 
   // 读取、导出外置资源、处理 tiddler
   const $tw = tiddlywiki([], wikiFolder);
@@ -71,9 +71,12 @@ export const publishOnlineHTML = async (
   });
 
   // 将构建好的插件注入
-  Object.entries(plugins).forEach(
-    ([title, tiddler]) => (tiddlers[title] = tiddler),
-  );
+  if (library) {
+    const plugins = await buildLibrary(path.join(dist, 'library'));
+    Object.entries(plugins).forEach(
+      ([title, tiddler]) => (tiddlers[title] = tiddler),
+    );
+  }
 
   // 构建
   const tmpFolder = fs.mkdtempSync(path.resolve(tmpdir(), 'tiddlywiki-'));
@@ -126,11 +129,11 @@ export const publishOfflineHTML = async (
   dist = 'dist',
   htmlName = 'index.html',
   excludeFilter = '-[is[draft]]',
+  library = true,
 ) => {
   // 构建插件库，导出插件
   const distDir = path.resolve(dist);
   const wikiFolder = path.resolve(wikiPath);
-  const plugins = await buildLibrary(path.join(dist, 'library'));
 
   // 读取所有 tiddler
   const $tw = tiddlywiki([], wikiFolder);
@@ -147,9 +150,12 @@ export const publishOfflineHTML = async (
   });
 
   // 将构建好的插件注入
-  Object.entries(plugins).forEach(
-    ([title, tiddler]) => (tiddlers[title] = tiddler),
-  );
+  if (library) {
+    const plugins = await buildLibrary(path.join(dist, 'library'));
+    Object.entries(plugins).forEach(
+      ([title, tiddler]) => (tiddlers[title] = tiddler),
+    );
+  }
 
   // 构建
   const tmpFolder = fs.mkdtempSync(path.resolve(tmpdir(), 'tiddlywiki-'));

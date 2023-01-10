@@ -69,6 +69,7 @@ program
     'File name of generated index html file',
     'index.html',
   )
+  .option('--no-library', 'Do not generate plugin library', true)
   .option('--wiki <wiki-path>', 'Path of your wiki to publish', './wiki')
   .action(
     async (
@@ -76,19 +77,21 @@ program
       {
         offline,
         exclude,
+        library,
         html,
         wiki,
       }: {
         offline: boolean;
         exclude: string;
+        library: boolean;
         html: string;
         wiki: string;
       },
     ) => {
       if (offline) {
-        await publishOfflineHTML(wiki, dist, html, exclude);
+        await publishOfflineHTML(wiki, dist, html, exclude, library);
       } else {
-        await publishOnlineHTML(wiki, dist, html, exclude);
+        await publishOnlineHTML(wiki, dist, html, exclude, library);
       }
       // eslint-disable-next-line no-process-exit
       process.exit(0);
