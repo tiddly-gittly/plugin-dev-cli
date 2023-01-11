@@ -16,8 +16,9 @@ program
   .description(
     'Start a TiddlyWiki server with your plugin(s) for test. It will always watch the file changes in the plugin folder(s) and refresh the browser page automatically.',
   )
-  .action(async () => {
-    await runDev();
+  .option('--wiki <wiki-path>', 'Path of your wiki to publish', './wiki')
+  .action(async ({ wiki }: { wiki: string }) => {
+    await runDev(wiki);
   });
 program
   .command('build')

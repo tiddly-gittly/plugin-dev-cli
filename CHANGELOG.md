@@ -1,5 +1,11 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.30
+
+### Patch Changes
+
+- can custom dev wiki path
+
 ## 0.0.29
 
 ### Patch Changes

@@ -51,14 +51,14 @@ const runServer = async () => {
 };
 
 // Run refresh server
-export const runDev = async () => {
+export const runDev = async (wiki: string) => {
   const { server, port } = await runServer();
   const devWebListnerScript = fs
     .readFileSync(path.resolve(__dirname, 'src/devweb-listener.js'), 'utf-8')
     .replace('$$$$port$$$$', `${port}`);
 
   // Watch source files change
-  const $tw1 = tiddlywiki([], 'wiki');
+  const $tw1 = tiddlywiki([], wiki);
   let twServer: Server;
   const watcher = chokidar.watch('src', {
     ignoreInitial: true,
@@ -103,7 +103,7 @@ export const runDev = async () => {
       );
       const serve = async () => {
         const port = await getPort({ port: 8080 });
-        $tw.boot.argv = ['wiki', '--listen', `port=${port}`];
+        $tw.boot.argv = [wiki, '--listen', `port=${port}`];
         $tw.boot.boot();
       };
       if (twServer) {
