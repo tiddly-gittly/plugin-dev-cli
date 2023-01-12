@@ -146,7 +146,7 @@ export const rebuild = async (
       if (
         excludeFilter &&
         $tw.wiki.filterTiddlers(`[[${plugin.title}]] +${excludeFilter}`)
-          .length < 1
+          .length > 0
       ) {
         return undefined;
       }
