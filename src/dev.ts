@@ -51,7 +51,7 @@ const runServer = async () => {
 };
 
 // Run refresh server
-export const runDev = async (wiki: string) => {
+export const runDev = async (wiki: string, excludeFilter?: string) => {
   const { server, port } = await runServer();
   const devWebListnerScript = fs
     .readFileSync(path.resolve(__dirname, 'src/devweb-listener.js'), 'utf-8')
@@ -84,7 +84,7 @@ export const runDev = async (wiki: string) => {
       const tmp = updateFiles;
       updateFiles = [];
       $tw1.wiki.deleteTiddler('$:/Modern.TiddlyDev/devWebsocket/listener');
-      const plugins = await rebuild($tw1, 'src', tmp, true);
+      const plugins = await rebuild($tw1, 'src', tmp, true, excludeFilter);
       const $tw = tw.TiddlyWiki();
       $tw.preloadTiddler({
         title: '$:/Modern.TiddlyDev/devWebsocket/listener',

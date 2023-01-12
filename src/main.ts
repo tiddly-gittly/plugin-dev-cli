@@ -17,23 +17,43 @@ program
     'Start a TiddlyWiki server with your plugin(s) for test. It will always watch the file changes in the plugin folder(s) and refresh the browser page automatically.',
   )
   .option('--wiki <wiki-path>', 'Path of your wiki to publish', './wiki')
-  .action(async ({ wiki }: { wiki: string }) => {
-    await runDev(wiki);
+  .option(
+    '--exclude <exclude-filter>',
+    'Filter to exclude publishing plugins. e.g. [prefix[$:/plugins/aaa/]]',
+    undefined,
+  )
+  .action(async ({ wiki, exclude }: { wiki: string; exclude?: string }) => {
+    await runDev(wiki, exclude);
   });
 program
   .command('build')
   .description('Build plugins for Modern.TiddlyDev')
   .option('--library', 'whether to build plugin library files', false)
   .option('--output <output>', 'set output directory', 'dist')
-  .action(async ({ library, output }: { library: boolean; output: string }) => {
-    if (library) {
-      await buildLibrary(output);
-    } else {
-      await build(output);
-    }
-    // eslint-disable-next-line no-process-exit
-    process.exit(0);
-  });
+  .option(
+    '--exclude <exclude-filter>',
+    'Filter to exclude publishing plugins. e.g. [prefix[$:/plugins/aaa/]]',
+    undefined,
+  )
+  .action(
+    async ({
+      library,
+      output,
+      exclude,
+    }: {
+      library: boolean;
+      output: string;
+      exclude?: string;
+    }) => {
+      if (library) {
+        await buildLibrary(output, exclude);
+      } else {
+        await build(output, exclude);
+      }
+      // eslint-disable-next-line no-process-exit
+      process.exit(0);
+    },
+  );
 program
   .command('new')
   .description('Create a new plugin')
@@ -64,6 +84,11 @@ program
     'Filter to exclude publishing tiddlers',
     '-[is[draft]]',
   )
+  .option(
+    '--exclude-plugin <exclude-plugin-filter>',
+    'Filter to exclude publishing plugins. e.g. [prefix[$:/plugins/aaa/]]',
+    undefined,
+  )
   .option('--offline', 'Generate single wiki file', false)
   .option(
     '--html <html-file>',
@@ -78,21 +103,37 @@ program
       {
         offline,
         exclude,
+        excludePlugin,
         library,
         html,
         wiki,
       }: {
         offline: boolean;
         exclude: string;
+        excludePlugin?: string;
         library: boolean;
         html: string;
         wiki: string;
       },
     ) => {
       if (offline) {
-        await publishOfflineHTML(wiki, dist, html, exclude, library);
+        await publishOfflineHTML(
+          wiki,
+          dist,
+          html,
+          exclude,
+          library,
+          excludePlugin,
+        );
       } else {
-        await publishOnlineHTML(wiki, dist, html, exclude, library);
+        await publishOnlineHTML(
+          wiki,
+          dist,
+          html,
+          exclude,
+          library,
+          excludePlugin,
+        );
       }
       // eslint-disable-next-line no-process-exit
       process.exit(0);

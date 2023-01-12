@@ -18,6 +18,7 @@ const bypassTiddlers = new Set([
  * @param {string} htmlName HTML名称，空或者不填则默认为'index.html'
  * @param {boolean} minify 是否最小化JS和HTML，默认为true
  * @param {string} excludeFilter 要排除的tiddler的过滤表达式，默认为'-[is[draft]]'
+ * @param {string} [excludeFilter] 排除构建的插件
  */
 export const publishOnlineHTML = async (
   wikiPath = 'wiki',
@@ -25,6 +26,7 @@ export const publishOnlineHTML = async (
   htmlName = 'index.html',
   excludeFilter = '-[is[draft]]',
   library = true,
+  excludePlugin?: string,
 ) => {
   // 构建插件库，导出插件
   const wikiFolder = path.resolve(wikiPath);
@@ -72,7 +74,10 @@ export const publishOnlineHTML = async (
 
   // 将构建好的插件注入
   if (library) {
-    const plugins = await buildLibrary(path.join(dist, 'library'));
+    const plugins = await buildLibrary(
+      path.join(dist, 'library'),
+      excludePlugin,
+    );
     Object.entries(plugins).forEach(
       ([title, tiddler]) => (tiddlers[title] = tiddler),
     );
@@ -123,6 +128,7 @@ export const publishOnlineHTML = async (
  * @param {string} htmlName HTML名称，空或者不填则默认为'index.html'
  * @param {boolean} minify 是否最小化JS和HTML，默认为true
  * @param {string} excludeFilter 要排除的tiddler的过滤表达式，默认为'-[is[draft]]'
+ * @param {string} [excludeFilter] 排除构建的插件
  */
 export const publishOfflineHTML = async (
   wikiPath = 'wiki',
@@ -130,6 +136,7 @@ export const publishOfflineHTML = async (
   htmlName = 'index.html',
   excludeFilter = '-[is[draft]]',
   library = true,
+  excludePlugin?: string,
 ) => {
   // 构建插件库，导出插件
   const distDir = path.resolve(dist);
@@ -151,7 +158,10 @@ export const publishOfflineHTML = async (
 
   // 将构建好的插件注入
   if (library) {
-    const plugins = await buildLibrary(path.join(dist, 'library'));
+    const plugins = await buildLibrary(
+      path.join(dist, 'library'),
+      excludePlugin,
+    );
     Object.entries(plugins).forEach(
       ([title, tiddler]) => (tiddlers[title] = tiddler),
     );

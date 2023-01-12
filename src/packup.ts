@@ -93,6 +93,7 @@ export const rebuild = async (
   pluginsDir: string,
   updatePaths: string[] = [],
   devMode = true,
+  excludeFilter?: string,
 ): Promise<ITiddlerFields[]> => {
   const baseDir = path.resolve(pluginsDir);
   if (!fs.existsSync(baseDir)) {
@@ -135,7 +136,18 @@ export const rebuild = async (
         return undefined;
       }
       const plugin = $tw.loadPluginFolder(dir)!;
+
+      // 过滤空插件
       if (!plugin?.title) {
+        return undefined;
+      }
+
+      // 筛选插件
+      if (
+        excludeFilter &&
+        $tw.wiki.filterTiddlers(`[[${plugin.title}]] +${excludeFilter}`)
+          .length < 1
+      ) {
         return undefined;
       }
 

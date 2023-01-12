@@ -33,11 +33,12 @@ const printPlugins = (plugins: Map<string, string>) => {
  *
  * @async
  * @param {string} [output] 插件输出的路径，不填则只构建但不保存
+ * @param {string} [excludeFilter] 排除构建的插件
  * @return {Promise<ITiddlerFields[]>} 构建好的插件
  */
-export const build = async (output?: string) => {
+export const build = async (output?: string, excludeFilter?: string) => {
   const $tw = tiddlywiki();
-  const plugins = await rebuild($tw, 'src', undefined, false);
+  const plugins = await rebuild($tw, 'src', undefined, false, excludeFilter);
   const pluginJsons = new Map<string, string>();
   plugins.forEach(plugin => {
     const pluginTiddlerName = `${basename(
@@ -60,17 +61,20 @@ export const build = async (output?: string) => {
  *
  * @async
  * @param {string} output 插件库输出的路径
+ * @param {string} [excludeFilter] 排除构建的插件
  * @return {Promise<ITiddlerFields[]>} 构建好的插件
  */
-export const buildLibrary = async (output: string) => {
+export const buildLibrary = async (output: string, excludeFilter?: string) => {
   const $tw = tiddlywiki();
   const plugins: Record<string, ITiddlerFields> = {};
   const pluginJsons = new Map<string, string>();
-  (await rebuild($tw, 'src', undefined, false)).forEach(plugin => {
-    const jsonStr = JSON.stringify(plugin);
-    pluginJsons.set(plugin.title, jsonStr);
-    plugins[plugin.title] = plugin;
-  });
+  (await rebuild($tw, 'src', undefined, false, excludeFilter)).forEach(
+    plugin => {
+      const jsonStr = JSON.stringify(plugin);
+      pluginJsons.set(plugin.title, jsonStr);
+      plugins[plugin.title] = plugin;
+    },
+  );
   printPlugins(pluginJsons);
   const pluginPaths = $tw.getLibraryItemSearchPaths($tw.config.pluginsPath);
   // eslint-disable-next-line no-console
