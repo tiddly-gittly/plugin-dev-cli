@@ -1,7 +1,7 @@
 {
   "name": "tiddlywiki-plugin-dev",
   "author": "Sttot",
-  "version": "0.0.32",
+  "version": "0.0.33",
   "main": "./dist/js/index.js",
   "bin": {
     "tiddlywiki-plugin-dev": "./dist/js/main.js"
@@ -74,12 +74,12 @@
     "lodash": "^4.17.21",
     "sha256": "^0.2.0",
     "simple-git": "^3.15.1",
+    "tiddlywiki": "latest",
     "uglify-js": "^3.15.4",
     "ws": "^8.6.0"
   },
   "peerDependencies": {
-    "tiddlywiki": ">=5.1.0",
-    "tw5-typed": "^0.2.16"
+    "tw5-typed": "^0.2.24"
   },
   "devDependencies": {
     "@modern-js/module-tools": "1.21.6",
@@ -98,7 +98,6 @@
     "lint-staged": "^11.2.6",
     "prettier": "^2.6.2",
     "rimraf": "^3.0.2",
-    "tiddlywiki": "latest",
     "ts-node": "^10.9.1",
     "tw5-typed": "latest",
     "typescript": "^4"

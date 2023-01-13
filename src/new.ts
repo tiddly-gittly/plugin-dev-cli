@@ -3,7 +3,7 @@ import path from 'path';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 
-export const createPlugin = async () => {
+export const createPlugin = async (src = 'src') => {
   const { pluginType, pluginName, authorName, description } =
     await inquirer.prompt([
       {
@@ -27,10 +27,10 @@ export const createPlugin = async () => {
     ]);
   // eslint-disable-next-line no-console
   console.log(chalk.green.bold('Creating...'));
-  if (!fs.existsSync(path.resolve('src'))) {
-    fs.mkdirSync(path.resolve('src'));
+  if (!fs.existsSync(path.resolve(src))) {
+    fs.mkdirSync(path.resolve(src));
   }
-  const pluginPath = path.resolve('src', encodeURIComponent(pluginName));
+  const pluginPath = path.resolve(src, encodeURIComponent(pluginName));
   if (fs.existsSync(pluginPath)) {
     const { override } = await inquirer.prompt({
       type: 'confirm',

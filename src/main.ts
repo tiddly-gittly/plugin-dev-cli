@@ -17,19 +17,32 @@ program
     'Start a TiddlyWiki server with your plugin(s) for test. It will always watch the file changes in the plugin folder(s) and refresh the browser page automatically.',
   )
   .option('--wiki <wiki-path>', 'Path of your wiki to publish', './wiki')
+  .option('--src <src-path>', 'Root path of developing plugins', './src')
   .option(
     '--exclude <exclude-filter>',
     'Filter to exclude publishing plugins. e.g. [prefix[$:/plugins/aaa/]]',
     undefined,
   )
-  .action(async ({ wiki, exclude }: { wiki: string; exclude?: string }) => {
-    await runDev(wiki, exclude);
-  });
+  .action(
+    async ({
+      wiki,
+      exclude,
+      src,
+    }: {
+      wiki: string;
+      exclude?: string;
+      src: string;
+    }) => {
+      await runDev(wiki, src, exclude);
+    },
+  );
 program
   .command('build')
   .description('Build plugins for Modern.TiddlyDev')
   .option('--library', 'whether to build plugin library files', false)
   .option('--output <output>', 'set output directory', 'dist')
+  .option('--wiki <wiki-path>', 'Path of your wiki to publish', './wiki')
+  .option('--src <src-path>', 'Root path of developing plugins', './src')
   .option(
     '--exclude <exclude-filter>',
     'Filter to exclude publishing plugins. e.g. [prefix[$:/plugins/aaa/]]',
@@ -39,16 +52,20 @@ program
     async ({
       library,
       output,
+      src,
+      wiki,
       exclude,
     }: {
       library: boolean;
       output: string;
+      src: string;
+      wiki: string;
       exclude?: string;
     }) => {
       if (library) {
-        await buildLibrary(output, exclude);
+        await buildLibrary(output, exclude, src, wiki);
       } else {
-        await build(output, exclude);
+        await build(output, exclude, src);
       }
       // eslint-disable-next-line no-process-exit
       process.exit(0);
@@ -57,8 +74,9 @@ program
 program
   .command('new')
   .description('Create a new plugin')
-  .action(async () => {
-    await createPlugin();
+  .option('--src <src-path>', 'Root path of developing plugins', './src')
+  .action(async ({ src }: { src: string }) => {
+    await createPlugin(src);
   });
 program
   .command('init')
@@ -90,6 +108,7 @@ program
     undefined,
   )
   .option('--offline', 'Generate single wiki file', false)
+  .option('--src <src-path>', 'Root path of developing plugins', './src')
   .option(
     '--html <html-file>',
     'File name of generated index html file',
@@ -107,6 +126,7 @@ program
         library,
         html,
         wiki,
+        src,
       }: {
         offline: boolean;
         exclude: string;
@@ -114,6 +134,7 @@ program
         library: boolean;
         html: string;
         wiki: string;
+        src: string;
       },
     ) => {
       if (offline) {
@@ -123,6 +144,7 @@ program
           html,
           exclude,
           library,
+          src,
           excludePlugin,
         );
       } else {
@@ -132,6 +154,7 @@ program
           html,
           exclude,
           library,
+          src,
           excludePlugin,
         );
       }

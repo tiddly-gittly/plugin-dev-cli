@@ -34,11 +34,16 @@ const printPlugins = (plugins: Map<string, string>) => {
  * @async
  * @param {string} [output] 插件输出的路径，不填则只构建但不保存
  * @param {string} [excludeFilter] 排除构建的插件
+ * @param {string} [srcPath='src'] 插件工程根路径
  * @return {Promise<ITiddlerFields[]>} 构建好的插件
  */
-export const build = async (output?: string, excludeFilter?: string) => {
+export const build = async (
+  output?: string,
+  excludeFilter?: string,
+  srcPath = 'src',
+) => {
   const $tw = tiddlywiki();
-  const plugins = await rebuild($tw, 'src', undefined, false, excludeFilter);
+  const plugins = await rebuild($tw, srcPath, undefined, false, excludeFilter);
   const pluginJsons = new Map<string, string>();
   plugins.forEach(plugin => {
     const pluginTiddlerName = `${basename(
@@ -62,13 +67,20 @@ export const build = async (output?: string, excludeFilter?: string) => {
  * @async
  * @param {string} output 插件库输出的路径
  * @param {string} [excludeFilter] 排除构建的插件
+ * @param {string} [srcPath='src'] 插件工程根路径
+ * @param {string} [wikiPath='wiki'] wiki 路径
  * @return {Promise<ITiddlerFields[]>} 构建好的插件
  */
-export const buildLibrary = async (output: string, excludeFilter?: string) => {
+export const buildLibrary = async (
+  output: string,
+  excludeFilter?: string,
+  srcPath = 'src',
+  wikiPath = 'wiki',
+) => {
   const $tw = tiddlywiki();
   const plugins: Record<string, ITiddlerFields> = {};
   const pluginJsons = new Map<string, string>();
-  (await rebuild($tw, 'src', undefined, false, excludeFilter)).forEach(
+  (await rebuild($tw, srcPath, undefined, false, excludeFilter)).forEach(
     plugin => {
       const jsonStr = JSON.stringify(plugin);
       pluginJsons.set(plugin.title, jsonStr);
@@ -99,7 +111,7 @@ export const buildLibrary = async (output: string, excludeFilter?: string) => {
           )!,
       ),
     ],
-    'wiki',
+    wikiPath,
     [
       ...['--output', resolve(output)] /* 指定输出路径 */,
       ...[

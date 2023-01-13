@@ -1,5 +1,11 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.33
+
+### Patch Changes
+
+- fix
+
 ## 0.0.32
 
 ### Patch Changes

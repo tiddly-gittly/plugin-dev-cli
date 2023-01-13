@@ -3,6 +3,7 @@ import path from 'path';
 import { tmpdir } from 'os';
 import { ITiddlerFields } from 'tw5-typed';
 import { buildLibrary } from './build';
+import { rebuild } from './packup';
 import { tiddlywiki, mkdirsForFileSync, waitForFile } from './utils';
 
 /** 项目路径 */
@@ -14,11 +15,13 @@ const bypassTiddlers = new Set([
 
 /**
  * 构建在线HTML版本：核心JS和资源文件不包括在HTML中， 下载后不能使用
- * @param {string} dist 目标路径，空或者不填则默认为'dist'
- * @param {string} htmlName HTML名称，空或者不填则默认为'index.html'
- * @param {boolean} minify 是否最小化JS和HTML，默认为true
- * @param {string} excludeFilter 要排除的tiddler的过滤表达式，默认为'-[is[draft]]'
- * @param {string} [excludeFilter] 排除构建的插件
+ * @param {string} [wikiPath='wiki'] wiki 路径
+ * @param {string} [dist='dist'] 构建产物路径
+ * @param {string} [htmlName='index.html'] 构建产生的 index 文件名
+ * @param {string} [excludeFilter='-[is[draft]]'] 要排除的tiddler的过滤表达式，默认为'-[is[draft]]'
+ * @param {boolean} [library=true] 是否同时构建插件库
+ * @param {string} [srcPath='src'] 插件工程根路径
+ * @param {string} [excludePlugin] 排除构建的插件
  */
 export const publishOnlineHTML = async (
   wikiPath = 'wiki',
@@ -26,6 +29,7 @@ export const publishOnlineHTML = async (
   htmlName = 'index.html',
   excludeFilter = '-[is[draft]]',
   library = true,
+  srcPath = 'src',
   excludePlugin?: string,
 ) => {
   // 构建插件库，导出插件
@@ -73,15 +77,16 @@ export const publishOnlineHTML = async (
   });
 
   // 将构建好的插件注入
-  if (library) {
-    const plugins = await buildLibrary(
-      path.join(dist, 'library'),
-      excludePlugin,
-    );
-    Object.entries(plugins).forEach(
-      ([title, tiddler]) => (tiddlers[title] = tiddler),
-    );
-  }
+  Object.entries(
+    library
+      ? await buildLibrary(
+          path.join(dist, 'library'),
+          excludePlugin,
+          srcPath,
+          wikiPath,
+        )
+      : await rebuild(tiddlywiki(), srcPath, undefined, false, excludeFilter),
+  ).forEach(([title, tiddler]) => (tiddlers[title] = tiddler));
 
   // 构建
   const tmpFolder = fs.mkdtempSync(path.resolve(tmpdir(), 'tiddlywiki-'));
@@ -124,11 +129,13 @@ export const publishOnlineHTML = async (
 
 /**
  * 构建离线HTML版本：核心JS和资源文件包括在HTML中， 下载后可以使用(就是单文件版本的wiki)
- * @param {string} dist 目标路径，空或者不填则默认为'dist'
- * @param {string} htmlName HTML名称，空或者不填则默认为'index.html'
- * @param {boolean} minify 是否最小化JS和HTML，默认为true
- * @param {string} excludeFilter 要排除的tiddler的过滤表达式，默认为'-[is[draft]]'
- * @param {string} [excludeFilter] 排除构建的插件
+ * @param {string} [wikiPath='wiki'] wiki 路径
+ * @param {string} [dist='dist'] 构建产物路径
+ * @param {string} [htmlName='index.html'] 构建产生的 index 文件名
+ * @param {string} [excludeFilter='-[is[draft]]'] 要排除的tiddler的过滤表达式，默认为'-[is[draft]]'
+ * @param {boolean} [library=true] 是否同时构建插件库
+ * @param {string} [srcPath='src'] 插件工程根路径
+ * @param {string} [excludePlugin] 排除构建的插件
  */
 export const publishOfflineHTML = async (
   wikiPath = 'wiki',
@@ -136,6 +143,7 @@ export const publishOfflineHTML = async (
   htmlName = 'index.html',
   excludeFilter = '-[is[draft]]',
   library = true,
+  srcPath = 'src',
   excludePlugin?: string,
 ) => {
   // 构建插件库，导出插件
@@ -157,15 +165,16 @@ export const publishOfflineHTML = async (
   });
 
   // 将构建好的插件注入
-  if (library) {
-    const plugins = await buildLibrary(
-      path.join(dist, 'library'),
-      excludePlugin,
-    );
-    Object.entries(plugins).forEach(
-      ([title, tiddler]) => (tiddlers[title] = tiddler),
-    );
-  }
+  Object.entries(
+    library
+      ? await buildLibrary(
+          path.join(dist, 'library'),
+          excludePlugin,
+          srcPath,
+          wikiPath,
+        )
+      : await rebuild(tiddlywiki(), srcPath, undefined, false, excludeFilter),
+  ).forEach(([title, tiddler]) => (tiddlers[title] = tiddler));
 
   // 构建
   const tmpFolder = fs.mkdtempSync(path.resolve(tmpdir(), 'tiddlywiki-'));
