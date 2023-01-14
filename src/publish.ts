@@ -13,6 +13,18 @@ const bypassTiddlers = new Set([
   '$:/UpgradeLibrary/List',
 ]);
 
+const headerMetadataTiddler: ITiddlerFields = {
+  title: '$:/Modern.TiddlyDev/no-cache-html',
+  tags: ['$:/tags/RawMarkupWikified/TopHead'],
+  text: [
+    '`',
+    '<meta http-equiv="cache-control" content="no-cache">',
+    '<meta http-equiv="expires" content="0">',
+    '<meta http-equiv="pragma" content="no-cache">',
+    '`',
+  ].join('\n'),
+} as any;
+
 /**
  * 构建在线HTML版本：核心JS和资源文件不包括在HTML中， 下载后不能使用
  * @param {string} [wikiPath='wiki'] wiki 路径
@@ -87,6 +99,9 @@ export const publishOnlineHTML = async (
         )
       : await rebuild(tiddlywiki(), srcPath, undefined, false, excludeFilter),
   ).forEach(([title, tiddler]) => (tiddlers[title] = tiddler));
+
+  // 缓存策略
+  tiddlers[headerMetadataTiddler.title] = headerMetadataTiddler;
 
   // 构建
   const tmpFolder = fs.mkdtempSync(path.resolve(tmpdir(), 'tiddlywiki-'));
@@ -175,6 +190,9 @@ export const publishOfflineHTML = async (
         )
       : await rebuild(tiddlywiki(), srcPath, undefined, false, excludeFilter),
   ).forEach(([title, tiddler]) => (tiddlers[title] = tiddler));
+
+  // 缓存策略
+  tiddlers[headerMetadataTiddler.title] = headerMetadataTiddler;
 
   // 构建
   const tmpFolder = fs.mkdtempSync(path.resolve(tmpdir(), 'tiddlywiki-'));

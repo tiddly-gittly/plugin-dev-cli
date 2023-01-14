@@ -1,5 +1,11 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.34
+
+### Patch Changes
+
+- no cache for online published index.html
+
 ## 0.0.33
 
 ### Patch Changes
