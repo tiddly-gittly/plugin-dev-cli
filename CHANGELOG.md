@@ -1,5 +1,11 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.36
+
+### Patch Changes
+
+- fix bug that crash when packing project without tailwindcss config file
+
 ## 0.0.35
 
 ### Patch Changes
