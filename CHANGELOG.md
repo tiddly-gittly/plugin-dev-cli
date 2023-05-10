@@ -1,5 +1,11 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.35
+
+### Patch Changes
+
+- Add support for tailwindcss
+
 ## 0.0.34
 
 ### Patch Changes

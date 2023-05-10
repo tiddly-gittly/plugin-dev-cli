@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
@@ -8,7 +9,10 @@ import UglifyJS from 'uglify-js';
 import CleanCSS from 'clean-css';
 import cliProgress from 'cli-progress';
 import browserslist from 'browserslist';
-import { ITiddlerFields, ITiddlyWiki } from 'tw5-typed';
+import type { ITiddlerFields, ITiddlyWiki } from 'tw5-typed';
+import postCssPlugin from 'esbuild-style-plugin';
+import tailwindcss from 'tailwindcss';
+import autoprefixer from 'autoprefixer';
 import { esbuildPluginBrowserslist } from 'esbuild-plugin-browserslist';
 import { walkFilesSync } from './utils';
 
@@ -99,6 +103,23 @@ export const rebuild = async (
   if (!fs.existsSync(baseDir)) {
     return [];
   }
+
+  // Touch TailwindCss config file
+  const tailwindConfigPath = path.resolve('.', 'tailwind.config.js');
+  if (!fs.existsSync(tailwindConfigPath)) {
+    fs.writeFileSync(
+      tailwindConfigPath,
+      [
+        'module.exports = {',
+        "  content: ['./src/**/*.{mjs,cjs,js,ts,jsx,tsx}'],",
+        '  theme: { extend: {} },',
+        '  plugins: [],',
+        '};',
+      ].join('\n'),
+      'utf-8',
+    );
+  }
+
   // eslint-disable-next-line no-console
   console.log(chalk.green.bold('Compiling...'));
   const bar = new cliProgress.SingleBar(
@@ -152,13 +173,16 @@ export const rebuild = async (
       }
 
       // 编译选项
-      const browserslistStr = (plugin['Modern.TiddlyDev#BrowsersList'] ??
-        '>0.25%, not ie 11, not op_mini all') as string;
+      const browserslistStr =
+        plugin['Modern.TiddlyDev#BrowsersList'] ??
+        '>0.25%, not ie 11, not op_mini all';
       const externalModules = $tw.utils.parseStringArray(
-        (plugin['Modern.TiddlyDev#ExternalModules'] as string) ?? '',
+        plugin['Modern.TiddlyDev#ExternalModules'] ?? '',
       );
-      const sourceMap = plugin['Modern.TiddlyDev#SourceMap'] === true;
-      const minifyPlugin = plugin['Modern.TiddlyDev#Minify'] !== false;
+      const sourceMap =
+        plugin['Modern.TiddlyDev#SourceMap']?.toLowerCase?.() === 'true';
+      const minifyPlugin =
+        plugin['Modern.TiddlyDev#Minify']?.toLowerCase?.() !== 'false';
       const tiddlers = JSON.parse(plugin.text).tiddlers as Record<
         string,
         ITiddlerFields
@@ -269,7 +293,7 @@ export const rebuild = async (
         // https://esbuild.github.io/api/#platform
         platform: 'browser',
         // https://esbuild.github.io/api/#external
-        external: ['$:/*', ...nodejsBuiltinModules, ...externalModules],
+        external: ['$:/*', ...nodejsBuiltinModules, ...(externalModules ?? [])],
         inject: [injectPath],
         // https://esbuild.github.io/api/#analyze
         metafile: true,
@@ -281,6 +305,11 @@ export const rebuild = async (
           // http://browserl.ist/?q=%3E0.25%25%2C+not+ie+11%2C+not+op_mini+all
           esbuildPluginBrowserslist(browserslist(browserslistStr), {
             printUnknownTargets: false,
+          }),
+          postCssPlugin({
+            postcss: {
+              plugins: [tailwindcss, autoprefixer],
+            },
           }),
         ],
       });
@@ -358,7 +387,7 @@ export const rebuild = async (
       pluginCache[dir] = {
         ...plugin,
         text: JSON.stringify({ tiddlers }),
-      };
+      } as unknown as ITiddlerFields;
 
       // 哈希校验
       if (!devMode) {
@@ -376,3 +405,4 @@ export const rebuild = async (
 
   return plugins.filter(plugin => plugin !== undefined) as ITiddlerFields[];
 };
+/* eslint-enable max-lines */
