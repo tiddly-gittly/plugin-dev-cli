@@ -1,5 +1,11 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.37
+
+### Patch Changes
+
+- Add Less, Sass, Stylus support
+
 ## 0.0.36
 
 ### Patch Changes

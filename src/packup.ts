@@ -308,7 +308,7 @@ export const rebuild = async (
           }),
           postCssPlugin({
             postcss: {
-              plugins: [tailwindcss, autoprefixer],
+              plugins: [tailwindcss as any, autoprefixer as any],
             },
           }),
         ],
