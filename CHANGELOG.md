@@ -1,5 +1,11 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.38
+
+### Patch Changes
+
+- Fixed an issue where files without .meta attachments on Windows OS were packaged into the plugin with the absolute path as title.
+
 ## 0.0.37
 
 ### Patch Changes
