@@ -27,6 +27,7 @@ const nodejsBuiltinModules = [
   'domain',
   'events',
   'fs',
+  'fsevents',
   'http',
   'https',
   'net',
@@ -191,9 +192,9 @@ export const rebuild = async (
       // 删除之前可能存在于 Wiki 的同名插件，以免被旧的覆盖掉
       $tw.wiki.deleteTiddler(plugin.title);
 
-      // 过滤没有 .meta 且不带原信息的文件，这些文件的 title 都是绝对路径
+      // 过滤没有 .meta 且不带原信息的文件，这些文件的 title 都是其绝对路径，*nix/bsd(macos)是/.*, win是\w:/
       Object.keys(tiddlers).forEach(title => {
-        if (title.startsWith('/') && fs.existsSync(title)) {
+        if (fs.existsSync(title) && !fs.existsSync(`${title}.meta`)) {
           delete tiddlers[title];
         }
       });
