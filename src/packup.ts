@@ -385,10 +385,15 @@ export const rebuild = async (
         });
       }
 
-      pluginCache[dir] = {
+      // 得到的字段要按字典序排序，保证哈希一致性
+      const t = {
         ...plugin,
         text: JSON.stringify({ tiddlers }),
-      } as unknown as ITiddlerFields;
+      };
+      pluginCache[dir] = {} as unknown as ITiddlerFields;
+      for (const key of Object.keys(t).sort()) {
+        (pluginCache[dir] as any)[key] = (t as any)[key];
+      }
 
       // 哈希校验
       if (!devMode) {

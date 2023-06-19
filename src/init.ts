@@ -30,12 +30,14 @@ export const init = async (
   const git = simpleGitt({
     baseDir: path.resolve(project),
   });
+  // 修改 git 信息
   await git.removeRemote('origin');
   await git.branch(['-m', 'template', 'master']);
   const shallowPath = path.resolve(project, '.git', 'shallow');
   if (fs.existsSync(shallowPath)) {
     fs.rmSync(path.resolve(project, '.git', 'shallow'));
   }
+  // npm 镜像
   if (npmUrl) {
     fs.writeFileSync(
       path.resolve(project, '.npmrc'),
@@ -50,10 +52,30 @@ export const init = async (
         .join('\n'),
     );
   }
+  // 安装
   execSync(`${npm} install`, { cwd: path.resolve(project), stdio: 'inherit' });
   execSync(`${npm} run update`, {
     cwd: path.resolve(project),
     stdio: 'inherit',
   });
   execSync(`${npm} install`, { cwd: path.resolve(project), stdio: 'inherit' });
+  // CI 脚本修改
+  const ciPath = path.resolve(project, '.github', 'workflows');
+  if (fs.existsSync(ciPath)) {
+    for (const file of fs.readdirSync(ciPath)) {
+      if (path.extname(file) !== '.yml') {
+        continue;
+      }
+      const filePath = path.resolve(ciPath, file);
+      const content = fs
+        .readFileSync(filePath, 'utf-8')
+        .replace(
+          /npm\s+install\s+-g\s+pnpm\s+&&\s+/g,
+          npm === 'npm' ? '' : `npm install -g ${npm} && `,
+        )
+        .replace(/pnpm\s+install/g, `${npm} install`)
+        .replace(/pnpm\s+run/g, `${npm} run`);
+      fs.writeFileSync(filePath, content, 'utf-8');
+    }
+  }
 };

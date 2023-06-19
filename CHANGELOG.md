@@ -1,5 +1,11 @@
 # tiddlywiki-plugin-dev
 
+## 0.0.39
+
+### Patch Changes
+
+- Update checksum algorithm, update project init strategy, fix package versio issue.
+
 ## 0.0.38
 
 ### Patch Changes

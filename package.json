@@ -1,7 +1,7 @@
 {
   "name": "tiddlywiki-plugin-dev",
   "author": "Sttot",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "main": "./dist/js/index.js",
   "bin": {
     "tiddlywiki-plugin-dev": "./dist/js/main.js"
@@ -84,9 +84,6 @@
     "tiddlywiki": "latest",
     "uglify-js": "^3.15.4",
     "ws": "^8.6.0"
-  },
-  "peerDependencies": {
-    "tw5-typed": "^0.2.24"
   },
   "devDependencies": {
     "@modern-js/module-tools": "1.21.6",
