@@ -302,6 +302,14 @@ export const rebuild = async (
           js: '/* Compiled by Modern.TiddlyDev: https://github.com/tiddly-gittly/Modern.TiddlyDev */',
           css: '/* Compiled by Modern.TiddlyDev: https://github.com/tiddly-gittly/Modern.TiddlyDev */',
         },
+        loader: {
+          '.png': 'dataurl',
+          '.woff': 'dataurl',
+          '.woff2': 'dataurl',
+          '.eot': 'dataurl',
+          '.ttf': 'dataurl',
+          '.svg': 'dataurl',
+        },
         plugins: [
           // http://browserl.ist/?q=%3E0.25%25%2C+not+ie+11%2C+not+op_mini+all
           esbuildPluginBrowserslist(browserslist(browserslistStr), {
