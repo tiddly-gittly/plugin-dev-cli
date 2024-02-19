@@ -54,10 +54,12 @@ export const init = async (
   }
   // 安装
   execSync(`${npm} install`, { cwd: path.resolve(project), stdio: 'inherit' });
+  // 更新 npm 依赖
   execSync(`${npm} run update`, {
     cwd: path.resolve(project),
     stdio: 'inherit',
   });
+  // 安装
   execSync(`${npm} install`, { cwd: path.resolve(project), stdio: 'inherit' });
   // CI 脚本修改
   const ciPath = path.resolve(project, '.github', 'workflows');
@@ -78,4 +80,6 @@ export const init = async (
       fs.writeFileSync(filePath, content, 'utf-8');
     }
   }
+  // 更新 dprint 依赖
+  execSync(`npx dprint config update`, { cwd: path.resolve(project), stdio: 'inherit' });
 };
