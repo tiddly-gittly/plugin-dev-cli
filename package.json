@@ -67,9 +67,9 @@
     "clean-css": "^5.3.0",
     "cli-progress": "^3.11.2",
     "commander": "^9.4.1",
-    "esbuild": "^0.14.38",
-    "esbuild-plugin-browserslist": "^0.4.9",
-    "esbuild-style-plugin": "^1.6.1",
+    "esbuild": "^0.20.1",
+    "esbuild-plugin-browserslist": "^0.11.1",
+    "esbuild-style-plugin": "^1.6.3",
     "get-port-please": "^2.6.1",
     "html-minifier-terser": "^7.1.0",
     "inquirer": "^8.1.3",
@@ -86,9 +86,9 @@
     "ws": "^8.6.0"
   },
   "devDependencies": {
-    "@modern-js/module-tools": "1.21.6",
-    "@modern-js/plugin-testing": "1.21.6",
-    "@modern-js/tsconfig": "1.21.6",
+    "@modern-js/module-tools": "2.46.1",
+    "@modern-js/plugin-testing": "2.46.1",
+    "@modern-js/tsconfig": "2.46.1",
     "@types/clean-css": "^4.2.6",
     "@types/cli-progress": "^3.11.0",
     "@types/html-minifier-terser": "^7.0.0",
@@ -104,7 +104,7 @@
     "rimraf": "^3.0.2",
     "ts-node": "^10.9.1",
     "tw5-typed": "latest",
-    "typescript": "^4"
+    "typescript": "^5.3.3"
   },
   "sideEffects": [
     "*.css",
