@@ -283,7 +283,7 @@ export const rebuild = async (
         minify: false,
         write: false,
         allowOverwrite: true,
-        incremental: true,
+        // incremental: true,
         outdir: baseDir,
         outbase: baseDir,
         sourcemap: devMode || sourceMap ? 'inline' : false,
