@@ -2,6 +2,7 @@
 import { program } from 'commander';
 import { init } from './init';
 import { runDev } from './dev';
+import { runTest } from './test';
 import { createPlugin } from './new';
 import { build, buildLibrary } from './build';
 import { publishOnlineHTML, publishOfflineHTML } from './publish';
@@ -33,7 +34,7 @@ program
       exclude?: string;
       src: string;
     }) => {
-      await runDev(wiki, src, false, exclude);
+      await runDev(wiki, src, exclude);
     },
   );
 program
@@ -56,7 +57,7 @@ program
       exclude?: string;
       src: string;
     }) => {
-      await runDev(wiki, src, true, exclude);
+      await runTest(wiki, src, exclude);
     },
   );
 program
