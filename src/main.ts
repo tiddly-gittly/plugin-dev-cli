@@ -20,7 +20,7 @@ program
   .option('--wiki <wiki-path>', 'Path of your wiki to publish', './wiki')
   .option('--src <src-path>', 'Root path of developing plugins', './src')
   .option(
-    '--write',
+    '--write-wiki',
     'Write back changes from browser to the wiki. (If without this, wiki is readonly)',
   )
   .option(
@@ -33,14 +33,14 @@ program
       wiki,
       exclude,
       src,
-      write,
+      writeWiki,
     }: {
       wiki: string;
       exclude?: string;
       src: string;
-      write: boolean;
+      writeWiki?: boolean;
     }) => {
-      await runDev(wiki, src, write, exclude);
+      await runDev(wiki, src, writeWiki, exclude);
     },
   );
 program

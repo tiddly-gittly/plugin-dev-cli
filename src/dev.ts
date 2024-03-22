@@ -54,7 +54,7 @@ const runServer = async () => {
 export const runDev = async (
   wiki: string,
   src: string,
-  write: boolean,
+  writeWiki?: boolean,
   excludeFilter?: string,
 ) => {
   const { server, port } = await runServer();
@@ -98,7 +98,7 @@ export const runDev = async (
         'module-type': 'startup',
       });
       $tw.preloadTiddlerArray(plugins);
-      if (write) {
+      if (writeWiki) {
         $tw.boot.extraPlugins = [
           ...($tw.boot.extraPlugins ?? []),
           'plugins/tiddlywiki/filesystem',
