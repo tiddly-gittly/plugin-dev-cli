@@ -1,5 +1,11 @@
 # tiddlywiki-plugin-dev
 
+## 0.1.1
+
+### Minor Changes
+
+- Allow testing using `test` command, and write back to wiki using `dev --write-wiki`
+
 ## 0.0.39
 
 ### Patch Changes
