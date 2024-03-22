@@ -33,7 +33,30 @@ program
       exclude?: string;
       src: string;
     }) => {
-      await runDev(wiki, src, exclude);
+      await runDev(wiki, src, false, exclude);
+    },
+  );
+program
+  .command('test')
+  .description('Run tests using Jasmine plugin. And works simillar to dev.')
+  .option('--wiki <wiki-path>', 'Path of your wiki to publish', './wiki')
+  .option('--src <src-path>', 'Root path of developing plugins', './src')
+  .option(
+    '--exclude <exclude-filter>',
+    'Filter to exclude publishing plugins. e.g. [prefix[$:/plugins/aaa/]]',
+    undefined,
+  )
+  .action(
+    async ({
+      wiki,
+      exclude,
+      src,
+    }: {
+      wiki: string;
+      exclude?: string;
+      src: string;
+    }) => {
+      await runDev(wiki, src, true, exclude);
     },
   );
 program

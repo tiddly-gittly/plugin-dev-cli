@@ -54,6 +54,7 @@ const runServer = async () => {
 export const runDev = async (
   wiki: string,
   src: string,
+  test: boolean,
   excludeFilter?: string,
 ) => {
   const { server, port } = await runServer();
@@ -105,9 +106,18 @@ export const runDev = async (
           twServer = newTwServer;
         },
       );
+      if (test) {
+        $tw.boot.extraPlugins = [
+          ...($tw.boot.extraPlugins ?? []),
+          'plugins/tiddlywiki/jasmine',
+        ];
+      }
       const serve = async () => {
         const port = await getPort({ port: 8080 });
         $tw.boot.argv = [wiki, '--listen', `port=${port}`];
+        if (test) {
+          $tw.boot.argv = [wiki, '--verbose', '--version', '--test'];
+        }
         $tw.boot.boot();
       };
       if (twServer) {
