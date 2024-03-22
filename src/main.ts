@@ -20,6 +20,10 @@ program
   .option('--wiki <wiki-path>', 'Path of your wiki to publish', './wiki')
   .option('--src <src-path>', 'Root path of developing plugins', './src')
   .option(
+    '--write',
+    'Write back changes from browser to the wiki. (If without this, wiki is readonly)',
+  )
+  .option(
     '--exclude <exclude-filter>',
     'Filter to exclude publishing plugins. e.g. [prefix[$:/plugins/aaa/]]',
     undefined,
@@ -29,12 +33,14 @@ program
       wiki,
       exclude,
       src,
+      write,
     }: {
       wiki: string;
       exclude?: string;
       src: string;
+      write: boolean;
     }) => {
-      await runDev(wiki, src, exclude);
+      await runDev(wiki, src, write, exclude);
     },
   );
 program

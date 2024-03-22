@@ -54,6 +54,7 @@ const runServer = async () => {
 export const runDev = async (
   wiki: string,
   src: string,
+  write: boolean,
   excludeFilter?: string,
 ) => {
   const { server, port } = await runServer();
@@ -97,6 +98,13 @@ export const runDev = async (
         'module-type': 'startup',
       });
       $tw.preloadTiddlerArray(plugins);
+      if (write) {
+        $tw.boot.extraPlugins = [
+          ...($tw.boot.extraPlugins ?? []),
+          'plugins/tiddlywiki/filesystem',
+          'plugins/tiddlywiki/tiddlyweb',
+        ];
+      }
       $tw.hooks.addHook(
         'th-server-command-post-start',
         // eslint-disable-next-line @typescript-eslint/no-loop-func
