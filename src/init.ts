@@ -14,13 +14,25 @@ export const init = async (
     console.error(`${project} already exists!`);
     return;
   }
-  const { npm } = await inquirer.prompt([
+  const { npm, authorName } = await inquirer.prompt([
     {
       type: 'list',
       name: 'npm',
       message: 'Which package manager do you use?',
       choices: ['npm', 'yarn', 'pnpm', 'tnpm', 'cnpm'],
       default: 'npm',
+    },
+    {
+      type: 'input',
+      name: 'authorName',
+      message: "What's your name ($:/plugins/<fill in your name>/plugin-name)",
+    },
+  ]);
+  const { pluginName } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'pluginName',
+      message: `What's the plugin's name ($:/plugins/${authorName}/<fill in plugin name>)`,
     },
   ]);
   // eslint-disable-next-line no-console
@@ -81,5 +93,54 @@ export const init = async (
     }
   }
   // 更新 dprint 依赖
-  execSync(`npx dprint config update`, { cwd: path.resolve(project), stdio: 'inherit' });
+  execSync(`npx dprint config update`, {
+    cwd: path.resolve(project),
+    stdio: 'inherit',
+  });
+  // 更新模板里的占位符插件名
+  const nameFrom = '$:/plugins/your-name/plugin-name';
+  const nameTo = `$:/plugins/${authorName}/${pluginName}`;
+  replaceStringInFilesSync(
+    path.resolve(project, 'src', 'plugin-name'),
+    nameFrom,
+    nameTo,
+  );
+  replaceStringInFilesSync(
+    path.resolve(project, 'wiki', 'plugin-name'),
+    nameFrom,
+    nameTo,
+  );
+  fs.renameSync(nameFrom, nameTo);
 };
+
+/**
+ * Synchronously replaces all occurrences of a specified string in all files of a folder, including subdirectories.
+ *
+ * @param {string} dir - The directory to search in.
+ * @param {string} searchString - The string to search for.
+ * @param {string} replaceString - The string to replace with.
+ */
+function replaceStringInFilesSync(
+  dir: string,
+  searchString: string,
+  replaceString: string,
+): void {
+  const files: string[] = fs.readdirSync(dir);
+
+  files.forEach((file: string) => {
+    const filePath: string = path.join(dir, file);
+    const stats: fs.Stats = fs.statSync(filePath);
+
+    if (stats.isFile()) {
+      const data: string = fs.readFileSync(filePath, 'utf8');
+      const result: string = data.replace(
+        new RegExp(searchString, 'g'),
+        replaceString,
+      );
+      fs.writeFileSync(filePath, result, 'utf8');
+    } else if (stats.isDirectory()) {
+      // Recurse into the subdirectory
+      replaceStringInFilesSync(filePath, searchString, replaceString);
+    }
+  });
+}
