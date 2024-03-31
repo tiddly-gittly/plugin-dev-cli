@@ -100,17 +100,11 @@ export const init = async (
   // 更新模板里的占位符插件名
   const nameFrom = '$:/plugins/your-name/plugin-name';
   const nameTo = `$:/plugins/${authorName}/${pluginName}`;
-  replaceStringInFilesSync(
-    path.resolve(project, 'src', 'plugin-name'),
-    nameFrom,
-    nameTo,
-  );
-  replaceStringInFilesSync(
-    path.resolve(project, 'wiki', 'plugin-name'),
-    nameFrom,
-    nameTo,
-  );
-  fs.renameSync(nameFrom, nameTo);
+  const pluginPathFrom = path.resolve(project, 'src', 'plugin-name');
+  const pluginPathTo = path.resolve(project, 'src', pluginName);
+  replaceStringInFilesSync(pluginPathFrom, nameFrom, nameTo);
+  fs.renameSync(pluginPathFrom, pluginPathTo);
+  replaceStringInFilesSync(path.resolve(project, 'wiki'), nameFrom, nameTo);
 };
 
 /**
@@ -133,10 +127,7 @@ function replaceStringInFilesSync(
 
     if (stats.isFile()) {
       const data: string = fs.readFileSync(filePath, 'utf8');
-      const result: string = data.replace(
-        new RegExp(searchString, 'g'),
-        replaceString,
-      );
+      const result: string = data.replaceAll(searchString, replaceString);
       fs.writeFileSync(filePath, result, 'utf8');
     } else if (stats.isDirectory()) {
       // Recurse into the subdirectory
