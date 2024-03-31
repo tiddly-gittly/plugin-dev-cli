@@ -54,9 +54,13 @@ const runServer = async () => {
 export const runDev = async (
   wiki: string,
   src: string,
-  writeWiki?: boolean,
-  excludeFilter?: string,
+  configs: {
+    lan?: boolean;
+    writeWiki?: boolean;
+    excludeFilter?: string;
+  },
 ) => {
+  const { lan, writeWiki, excludeFilter } = configs;
   const { server, port } = await runServer();
   const devWebListnerScript = fs
     .readFileSync(path.resolve(__dirname, 'src/devweb-listener.js'), 'utf-8')
@@ -116,6 +120,9 @@ export const runDev = async (
       const serve = async () => {
         const port = await getPort({ port: 8080 });
         $tw.boot.argv = [wiki, '--listen', `port=${port}`];
+        if (lan) {
+          $tw.boot.argv.push('host=0.0.0.0');
+        }
         $tw.boot.boot();
       };
       if (twServer) {

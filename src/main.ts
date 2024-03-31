@@ -24,6 +24,10 @@ program
     'Write back changes from browser to the wiki. (If without this, wiki is readonly)',
   )
   .option(
+    '--lan',
+    'Listen on 0.0.0.0, so it can be open on mobile phone on same lan wifi (If without this, wiki is on `127.0.0.1`, which can only open on the local machine)',
+  )
+  .option(
     '--exclude <exclude-filter>',
     'Filter to exclude publishing plugins. e.g. [prefix[$:/plugins/aaa/]]',
     undefined,
@@ -34,13 +38,15 @@ program
       exclude,
       src,
       writeWiki,
+      lan,
     }: {
       wiki: string;
       exclude?: string;
       src: string;
       writeWiki?: boolean;
+      lan?: boolean;
     }) => {
-      await runDev(wiki, src, writeWiki, exclude);
+      await runDev(wiki, src, { writeWiki, excludeFilter: exclude, lan });
     },
   );
 program
