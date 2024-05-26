@@ -180,6 +180,9 @@ export const rebuild = async (
       const externalModules = $tw.utils.parseStringArray(
         plugin['Modern.TiddlyDev#ExternalModules'] ?? '',
       );
+      const nodeBuildInModulesToNotExternal = $tw.utils.parseStringArray(
+        plugin['Modern.TiddlyDev#NodeModulesNotExternal'] ?? '',
+      );
       const sourceMap =
         plugin['Modern.TiddlyDev#SourceMap']?.toLowerCase?.() === 'true';
       const minifyPlugin =
@@ -294,7 +297,14 @@ export const rebuild = async (
         // https://esbuild.github.io/api/#platform
         platform: 'browser',
         // https://esbuild.github.io/api/#external
-        external: ['$:/*', ...nodejsBuiltinModules, ...(externalModules ?? [])],
+        external: [
+          '$:/*',
+          // allow whitelist some node build-in modules
+          ...nodejsBuiltinModules.filter(
+            name => !nodeBuildInModulesToNotExternal.includes(name),
+          ),
+          ...(externalModules ?? []),
+        ],
         inject: [injectPath],
         // https://esbuild.github.io/api/#analyze
         metafile: true,
@@ -326,7 +336,7 @@ export const rebuild = async (
       outputFiles.forEach(file => {
         // esbuild 的 matadata 路径无论是 windows 还是 POSIX 都是以 / 为分隔符，因此要额外处理
         const output =
-          metafile!.outputs[
+          metafile.outputs[
             path.relative(rootPath, file.path).split(path.sep).join('/')
           ];
         let meta: ITiddlerFields = {} as any;
