@@ -38,6 +38,9 @@ importers:
       esbuild-style-plugin:
         specifier: ^1.6.3
         version: 1.6.3
+      esbuild-svelte:
+        specifier: ^0.8.1
+        version: 0.8.1(esbuild@0.20.1)(svelte@4.2.19)
       get-port-please:
         specifier: ^2.6.1
         version: 2.6.1
@@ -68,6 +71,9 @@ importers:
       stylus:
         specifier: ^0.59.0
         version: 0.59.0
+      svelte-preprocess:
+        specifier: ^6.0.2
+        version: 6.0.2(@babel/core@7.23.9)(less@4.2.0)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@18.19.17)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.0)(stylus@0.59.0)(svelte@4.2.19)(typescript@5.3.3)
       tailwindcss:
         specifier: ^3.2.7
         version: 3.4.1(ts-node@10.9.2(@types/node@18.19.17)(typescript@5.3.3))
@@ -117,9 +123,6 @@ importers:
       '@types/ws':
         specifier: ^8.5.3
         version: 8.5.10
-      esbuild-svelte:
-        specifier: ^0.8.1
-        version: 0.8.1(esbuild@0.20.1)(svelte@4.2.19)
       husky:
         specifier: ^8
         version: 8.0.3
@@ -132,9 +135,6 @@ importers:
       rimraf:
         specifier: ^3.0.2
         version: 3.0.2
-      svelte-preprocess:
-        specifier: ^6.0.2
-        version: 6.0.2(@babel/core@7.23.9)(less@4.2.0)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@18.19.17)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.0)(stylus@0.59.0)(svelte@4.2.19)(typescript@5.3.3)
       ts-node:
         specifier: ^10.9.1
         version: 10.9.2(@types/node@18.19.17)(typescript@5.3.3)
@@ -9883,7 +9883,7 @@ snapshots:
 
   code-red@1.0.4:
     dependencies:
-      '@jridgewell/sourcemap-codec': 1.4.15
+      '@jridgewell/sourcemap-codec': 1.5.0
       '@types/estree': 1.0.5
       acorn: 8.11.3
       estree-walker: 3.0.3
@@ -13762,7 +13762,7 @@ snapshots:
   svelte@4.2.19:
     dependencies:
       '@ampproject/remapping': 2.2.1
-      '@jridgewell/sourcemap-codec': 1.4.15
+      '@jridgewell/sourcemap-codec': 1.5.0
       '@jridgewell/trace-mapping': 0.3.22
       '@types/estree': 1.0.5
       acorn: 8.11.3
