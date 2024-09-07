@@ -13,6 +13,8 @@ import type { ITiddlerFields, ITiddlyWiki } from 'tw5-typed';
 import postCssPlugin from 'esbuild-style-plugin';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
+import esbuildSvelte from "esbuild-svelte";
+import sveltePreprocess from "svelte-preprocess";
 import { esbuildPluginBrowserslist } from 'esbuild-plugin-browserslist';
 import { walkFilesSync } from './utils';
 
@@ -329,6 +331,9 @@ export const rebuild = async (
             postcss: {
               plugins: [tailwindcss as any, autoprefixer as any],
             },
+          }),
+          esbuildSvelte({
+            preprocess: sveltePreprocess(),
           }),
         ],
       });

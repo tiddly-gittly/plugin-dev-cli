@@ -98,10 +98,12 @@
     "@types/sha256": "^0.2.0",
     "@types/uglify-js": "^3.17.1",
     "@types/ws": "^8.5.3",
+    "esbuild-svelte": "^0.8.1",
     "husky": "^8",
     "lint-staged": "^11.2.6",
     "prettier": "^2.6.2",
     "rimraf": "^3.0.2",
+    "svelte-preprocess": "^6.0.2",
     "ts-node": "^10.9.1",
     "tw5-typed": "latest",
     "typescript": "^5.3.3"
