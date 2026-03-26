@@ -7,6 +7,7 @@ import { getPort } from 'get-port-please';
 import { WebSocketServer, WebSocket } from 'ws';
 
 import { rebuild } from './packup';
+import { createDevRefreshHandler, DevRefreshWiki } from './dev-refresh';
 import { tiddlywiki } from './utils';
 
 // WebSocket with TiddlyWiki on broswer
@@ -62,14 +63,17 @@ export const runDev = async (
 ) => {
   const { lan, writeWiki, excludeFilter } = configs;
   const { server, port } = await runServer();
+  const watchRoots = Array.from(
+    new Set([src, wiki].map(target => path.resolve(target))),
+  );
   const devWebListnerScript = fs
     .readFileSync(path.resolve(__dirname, 'src/devweb-listener.js'), 'utf-8')
     .replace('$$$$port$$$$', `${port}`);
 
-  // Watch source files change
+  // Watch source files and wiki files change
   const $tw1 = tiddlywiki([], wiki);
   let twServer: Server;
-  const watcher = chokidar.watch(src, {
+  const watcher = chokidar.watch(watchRoots, {
     ignoreInitial: true,
     followSymlinks: true,
     ignored: $tw1.boot.excludeRegExp,
@@ -78,69 +82,102 @@ export const runDev = async (
       pollInterval: 100,
     },
   });
-  let updateFiles: string[] | undefined;
-  const refresh = async (path: string) => {
-    // 因为 build 是异步的，这里给 refresh 加一个资源锁，否则会出现奇怪的问题
-    if (updateFiles !== undefined) {
-      updateFiles.push(path);
-      return;
-    } else {
-      updateFiles = [path];
-    }
-    while (updateFiles?.length) {
-      let resolve: (value: void | PromiseLike<void>) => void;
-      const wait = new Promise<void>(_resolve => (resolve = _resolve));
-      const tmp = updateFiles;
-      updateFiles = [];
-      $tw1.wiki.deleteTiddler('$:/Modern.TiddlyDev/devWebsocket/listener');
-      const plugins = await rebuild($tw1, src, tmp, true, excludeFilter);
-      const $tw = tw.TiddlyWiki();
-      $tw.preloadTiddler({
-        title: '$:/Modern.TiddlyDev/devWebsocket/listener',
-        text: devWebListnerScript,
-        type: 'application/javascript',
-        'module-type': 'startup',
-      });
-      $tw.preloadTiddlerArray(plugins);
-      if (writeWiki) {
-        $tw.boot.extraPlugins = [
-          ...($tw.boot.extraPlugins ?? []),
-          'plugins/tiddlywiki/filesystem',
-          'plugins/tiddlywiki/tiddlyweb',
-        ];
-      }
-      $tw.hooks.addHook(
-        'th-server-command-post-start',
-        // eslint-disable-next-line @typescript-eslint/no-loop-func
-        (_listenCommand, newTwServer) => {
-          newTwServer.on('listening', () => resolve());
-          twServer = newTwServer;
-        },
-      );
-      const serve = async () => {
-        const port = await getPort({ port: 8080 });
-        $tw.boot.argv = [wiki, '--listen', `port=${port}`];
-        if (lan) {
-          $tw.boot.argv.push('host=0.0.0.0');
-        }
-        $tw.boot.boot();
-      };
-      if (twServer) {
-        twServer.on('close', serve);
-        twServer.close();
-      } else {
-        serve();
-      }
-      await wait;
-    }
-    server.clients.forEach(ws => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send('refresh');
-      }
-    });
-    updateFiles = undefined;
+  const reportRefreshError = (error: unknown, changedPaths: string[]) => {
+    const changed = changedPaths.filter(Boolean);
+
+    console.error(
+      changed.length > 0
+        ? `Compilation failed for: ${changed.join(', ')}`
+        : 'Compilation failed during initial build.',
+    );
+    console.error('Waiting for the next change to retry...');
+    console.error(error);
   };
-  watcher.on('ready', refresh);
-  watcher.on('add', refresh);
-  watcher.on('change', refresh);
+  const startWikiServer = async (
+    wikiRuntime: DevRefreshWiki,
+    changedPaths: string[],
+  ) => {
+    const $tw = wikiRuntime.runtime as ReturnType<typeof tw.TiddlyWiki>;
+    let resolve: (started: boolean) => void;
+    let settled = false;
+    const finish = (started: boolean) => {
+      if (!settled) {
+        settled = true;
+        resolve(started);
+      }
+    };
+    const wait = new Promise<boolean>(_resolve => (resolve = _resolve));
+
+    $tw.hooks.addHook(
+      'th-server-command-post-start',
+      (_listenCommand, newTwServer) => {
+        newTwServer.once('listening', () => finish(true));
+        twServer = newTwServer;
+      },
+    );
+    const serve = async () => {
+      const port = await getPort({ port: 8080 });
+      $tw.boot.argv = [wiki, '--listen', `port=${port}`];
+      if (lan) {
+        $tw.boot.argv.push('host=0.0.0.0');
+      }
+      $tw.boot.boot();
+    };
+    const startServer = () => {
+      serve().catch(error => {
+        reportRefreshError(error, changedPaths);
+        finish(false);
+      });
+    };
+    if (twServer) {
+      twServer.once('close', startServer);
+      twServer.close();
+    } else {
+      startServer();
+    }
+
+    return wait;
+  };
+  const refresh = createDevRefreshHandler({
+    listenerScript: devWebListnerScript,
+    writeWiki,
+    rebuildPlugins: async changedPaths => {
+      $tw1.wiki.deleteTiddler('$:/Modern.TiddlyDev/devWebsocket/listener');
+      return rebuild($tw1, src, changedPaths, true, excludeFilter);
+    },
+    createWiki: () => {
+      const $tw = tw.TiddlyWiki();
+      return {
+        runtime: $tw,
+        preloadTiddler: tiddler => $tw.preloadTiddler(tiddler),
+        preloadTiddlerArray: tiddlers => $tw.preloadTiddlerArray(tiddlers),
+        appendExtraPlugins: plugins => {
+          $tw.boot.extraPlugins = [
+            ...($tw.boot.extraPlugins ?? []),
+            ...plugins,
+          ];
+        },
+      };
+    },
+    startServer: startWikiServer,
+    notifyRefresh: () => {
+      server.clients.forEach(ws => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send('refresh');
+        }
+      });
+    },
+    reportError: reportRefreshError,
+  });
+  const triggerRefresh = (changedPath?: string) => {
+    refresh(changedPath).catch(error => reportRefreshError(error, []));
+  };
+
+  watcher.on('error', error => reportRefreshError(error, []));
+  watcher.on('ready', () => triggerRefresh());
+  watcher.on('add', triggerRefresh);
+  watcher.on('addDir', triggerRefresh);
+  watcher.on('change', triggerRefresh);
+  watcher.on('unlink', triggerRefresh);
+  watcher.on('unlinkDir', triggerRefresh);
 };

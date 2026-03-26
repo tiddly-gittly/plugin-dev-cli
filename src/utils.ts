@@ -85,8 +85,11 @@ export const sleep = (millionseconds: number) =>
  */
 export const waitForFile = (path: string) =>
   new Promise<void>(resolve => {
-    const id = setInterval(() => {
+    if (fs.existsSync(path)) {
       resolve();
+      return;
+    }
+    const id = setInterval(() => {
       if (fs.existsSync(path)) {
         resolve();
         clearInterval(id);

@@ -1,4 +1,17 @@
+
 # tiddlywiki-plugin-dev
+
+## 0.4.0
+
+### Major Changes
+
+- Refactored dev/watch architecture: the dev process no longer crashes on TS/JS syntax errors, and will auto-recover after code is fixed.
+- dev/watch now watches the wiki directory as well, including hot-reload for file and directory add/remove events.
+- Decoupled CLI command definitions from implementation, with testable argument mapping.
+- Added fixture-based tests for build/publish flows to ensure output artifacts are generated as expected.
+- Introduced a testable abstraction for the dev refresh workflow, supporting error recovery and dependency injection.
+- Upgraded dependencies and enforced Node.js >= 20 for compatibility.
+- Improved unit test coverage: dev recovery, CLI argument mapping, build/publish output, and more.
 
 ## 0.2.0
 

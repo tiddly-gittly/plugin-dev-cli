@@ -34,7 +34,7 @@ Commands:
 
 ### Developing plugins
 
-Start a TiddlyWiki server with your plugin(s) for test. It will always watch the file changes in the plugin folder(s) and refresh the browser page automatically.
+Start a TiddlyWiki server with your plugin(s) for test. It will always watch the file changes in the plugin folder(s) and wiki folder, then refresh the browser page automatically.
 
 ```bash
 npx tiddlywiki-plugin-dev dev

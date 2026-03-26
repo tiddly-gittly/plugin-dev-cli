@@ -34,7 +34,7 @@ Commands:
 
 ### 插件开发
 
-根据你所编写的插件，启动一个 TiddlyWiki 服务进行测试。期间将时刻关注插件文件夹中的变化并自动刷新页面。
+根据你所编写的插件，启动一个 TiddlyWiki 服务进行测试。期间将时刻关注插件文件夹和 wiki 文件夹中的变化并自动刷新页面。
 
 ```bash
 npx tiddlywiki-plugin-dev dev
