@@ -1,6 +1,12 @@
 
 # tiddlywiki-plugin-dev
 
+## 0.4.1
+
+### Patch Changes
+
+- Moved `tiddlywiki` from `dependencies` to `peerDependencies` (`>=5.2.0`). This prevents a duplicate TiddlyWiki installation when the host project already has its own version (e.g. 5.4.0-prerelease). The host project must now provide `tiddlywiki` as a direct dependency; the CLI will use whichever version the host has installed.
+
 ## 0.4.0
 
 ### Major Changes
