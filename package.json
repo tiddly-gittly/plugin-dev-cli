@@ -1,7 +1,7 @@
 {
   "name": "tiddlywiki-plugin-dev",
   "author": "Sttot",
-  "version": "0.4.1",
+  "version": "0.4.3",
   "main": "./dist/js/index.js",
   "bin": {
     "tiddlywiki-plugin-dev": "./dist/js/main.js"
@@ -68,6 +68,7 @@
     "esbuild-svelte": "^0.9.4",
     "get-port-please": "^3.2.0",
     "html-minifier-terser": "^7.2.0",
+    "ignore": "^7.0.5",
     "inquirer": "^8.2.7",
     "less": "^4.6.4",
     "lodash": "^4.17.23",

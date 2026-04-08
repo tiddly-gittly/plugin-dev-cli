@@ -4,52 +4,12 @@ import tw from 'tiddlywiki';
 import chokidar from 'chokidar';
 import { Server } from 'tw5-typed';
 import { getPort } from 'get-port-please';
-import { WebSocketServer, WebSocket } from 'ws';
 
 import { rebuild } from './packup';
 import { createDevRefreshHandler, DevRefreshWiki } from './dev-refresh';
+import { createNotifyServer } from './dev-ws-server';
+import { buildWatchIgnored } from './dev-ignored';
 import { tiddlywiki } from './utils';
-
-// WebSocket with TiddlyWiki on broswer
-const runServer = async () => {
-  const port = await getPort({ port: 8081 });
-  const server = new WebSocketServer({ port });
-  const refreshHeartBeat = (ws: any) => {
-    ws.isAlive = true;
-    if (ws.heartBeatInterval) {
-      clearInterval(ws.heartBeatInterval);
-    }
-    // eslint-disable-next-line consistent-return
-    ws.heartBeatInterval = setInterval(() => {
-      if (ws.isAlive === false) {
-        clearInterval(ws.heartBeatInterval);
-        delete ws.heartBeatInterval;
-        return ws.terminate();
-      }
-      ws.isAlive = false;
-      ws.ping();
-    }, 5_000);
-  };
-  server.on('connection', ws => {
-    refreshHeartBeat(ws);
-    ws.ping();
-    ws.on('pong', () => refreshHeartBeat(ws));
-    ws.on('close', () => {
-      if ((ws as any).heartBeatInterval) {
-        clearInterval((ws as any).heartBeatInterval);
-      }
-    });
-  });
-  server.on('close', () => {
-    server.clients.forEach(ws => {
-      if ((ws as any).heartBeatInterval) {
-        clearInterval((ws as any).heartBeatInterval);
-      }
-      ws.send('bye');
-    });
-  });
-  return { server, port };
-};
 
 // Run refresh server
 export const runDev = async (
@@ -62,7 +22,7 @@ export const runDev = async (
   },
 ) => {
   const { lan, writeWiki, excludeFilter } = configs;
-  const { server, port } = await runServer();
+  const { port, notifyRefresh } = await createNotifyServer();
   const watchRoots = Array.from(
     new Set([src, wiki].map(target => path.resolve(target))),
   );
@@ -73,10 +33,11 @@ export const runDev = async (
   // Watch source files and wiki files change
   const $tw1 = tiddlywiki([], wiki);
   let twServer: Server;
+
   const watcher = chokidar.watch(watchRoots, {
     ignoreInitial: true,
     followSymlinks: true,
-    ignored: $tw1.boot.excludeRegExp,
+    ignored: buildWatchIgnored($tw1, src, wiki),
     awaitWriteFinish: {
       stabilityThreshold: 1000,
       pollInterval: 100,
@@ -160,13 +121,7 @@ export const runDev = async (
       };
     },
     startServer: startWikiServer,
-    notifyRefresh: () => {
-      server.clients.forEach(ws => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send('refresh');
-        }
-      });
-    },
+    notifyRefresh,
     reportError: reportRefreshError,
   });
   const triggerRefresh = (changedPath?: string) => {
