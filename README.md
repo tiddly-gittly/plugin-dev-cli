@@ -12,6 +12,14 @@ This is a npm CLI tool, helping developers to develop and build [TiddlyWiki](htt
 
 This tool needs to be used with [Modern.TiddlyDev](https://github.com/tiddly-gittly/Modern.TiddlyDev), so it is not introduced here, please refer to [the Document of Modern.TiddlyDev](https://tiddly-gittly.github.io/Modern.TiddlyDev) for detailed usage.
 
+## ESM Build Notes
+
+The package is published as native ESM (`"type": "module"`).
+
+- Source files in `src/` keep extensionless TypeScript imports (for better DX).
+- During `modern build`, a compile-time Babel plugin rewrites only relative imports in emitted JS to include `.js` extensions.
+- CLI usage is unchanged: `npx tiddlywiki-plugin-dev ...`.
+
 ### help
 
 ```bash

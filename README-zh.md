@@ -12,6 +12,14 @@ Tiddlywiki 插件开发工具, 与 [Modern.TiddlyDev](https://github.com/tiddly-
 
 该工具需要与 [Modern.TiddlyDev](https://github.com/tiddly-gittly/Modern.TiddlyDev) 一起使用，因此这里不过多介绍，详细使用方法请参考 [Modern.TiddlyDev 文档](https://tiddly-gittly.github.io/Modern.TiddlyDev)。
 
+## ESM 构建说明
+
+本包以原生 ESM 方式发布（`"type": "module"`）。
+
+- `src/` 中源码保持无后缀的 TypeScript 导入，便于开发。
+- 执行 `modern build` 时，使用编译期 Babel 插件仅对产物中的相对导入补 `.js` 后缀。
+- CLI 用法不变：`npx tiddlywiki-plugin-dev ...`。
+
 ### 命令提示
 
 ```bash
