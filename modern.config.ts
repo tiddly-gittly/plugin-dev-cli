@@ -6,7 +6,7 @@ export default defineConfig({
     buildConfig: [
       {
         buildType: 'bundleless',
-        format: 'cjs',
+        format: 'esm',
         target: 'es6',
         outputPath: './js',
       },
