@@ -3,6 +3,7 @@
   "compilerOptions": {
     "declaration": false,
     "module": "ESNext",
+    "ignoreDeprecations": "6.0",
     "moduleResolution": "node",
     "jsx": "preserve",
     "baseUrl": "./",

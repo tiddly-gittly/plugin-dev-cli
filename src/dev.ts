@@ -3,7 +3,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import tw from 'tiddlywiki';
 import chokidar from 'chokidar';
-import type { Server } from 'tiddlywiki';
 
 import { rebuild } from './packup';
 import { createDevRefreshHandler, DevRefreshWiki } from './dev-refresh';
@@ -13,6 +12,11 @@ import { createWikiPortResolver } from './dev-port';
 import { tiddlywiki } from './utils';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+
+type ClosableServer = {
+  once: (event: string, listener: (...args: unknown[]) => void) => void;
+  close: () => void;
+};
 
 // Run refresh server
 export const runDev = async (
@@ -43,7 +47,7 @@ export const runDev = async (
 
   // Watch source files and wiki files change
   const $tw1 = tiddlywiki([], wiki);
-  let twServer: Server;
+  let twServer: ClosableServer | undefined;
   const resolveStableWikiPort = createWikiPortResolver(lan);
 
   const watcher = chokidar.watch(watchRoots, {
