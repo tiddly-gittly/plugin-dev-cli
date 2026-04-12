@@ -3,12 +3,12 @@ import path from 'path';
 import tw from 'tiddlywiki';
 import chokidar from 'chokidar';
 import { Server } from 'tw5-typed';
-import { getPort } from 'get-port-please';
 
 import { rebuild } from './packup';
 import { createDevRefreshHandler, DevRefreshWiki } from './dev-refresh';
 import { createNotifyServer } from './dev-ws-server';
 import { buildWatchIgnored } from './dev-ignored';
+import { resolveWikiListenPort } from './dev-port';
 import { tiddlywiki } from './utils';
 
 // Run refresh server
@@ -72,12 +72,17 @@ export const runDev = async (
     $tw.hooks.addHook(
       'th-server-command-post-start',
       (_listenCommand, newTwServer) => {
+        const onServerError = (error: unknown) => {
+          reportRefreshError(error, changedPaths);
+          finish(false);
+        };
+        newTwServer.once('error', onServerError);
         newTwServer.once('listening', () => finish(true));
         twServer = newTwServer;
       },
     );
     const serve = async () => {
-      const port = await getPort({ port: 8080 });
+      const port = await resolveWikiListenPort(lan);
       $tw.boot.argv = [wiki, '--listen', `port=${port}`];
       if (lan) {
         $tw.boot.argv.push('host=0.0.0.0');
