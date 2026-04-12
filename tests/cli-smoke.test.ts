@@ -12,6 +12,16 @@ const runNode = (args: string[]) =>
     env: process.env,
   });
 
+const runBin = (args: string[]) => {
+  const quotedArgs = args.map(arg => `"${arg}"`).join(' ');
+  return execSync(`pnpm exec tiddlywiki-plugin-dev ${quotedArgs}`, {
+    cwd: rootDir,
+    encoding: 'utf8',
+    env: process.env,
+    shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh',
+  });
+};
+
 describe('built cli smoke', () => {
   beforeAll(() => {
     execSync('pnpm build', {
@@ -32,6 +42,14 @@ describe('built cli smoke', () => {
 
   test('dev subcommand help works from built artifact', () => {
     const output = runNode([cliEntry, 'dev', '--help']);
+
+    expect(output).toContain('Usage:');
+    expect(output).toContain('--wiki');
+    expect(output).toContain('--src');
+  });
+
+  test('dev subcommand help works via package bin shim', () => {
+    const output = runBin(['dev', '--help']);
 
     expect(output).toContain('Usage:');
     expect(output).toContain('--wiki');

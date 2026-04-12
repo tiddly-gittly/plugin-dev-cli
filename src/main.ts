@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import { pathToFileURL } from 'url';
 import { init } from './init';
 import { runDev } from './dev';
 import { runTest } from './test';
@@ -55,11 +54,6 @@ export const program = createProgram({
     ),
 });
 
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(process.argv[1]).href
-) {
-  program.parse();
-}
+program.parse();
 
 export default program;
