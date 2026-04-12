@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import tw from 'tiddlywiki';
 import chokidar from 'chokidar';
-import { Server } from 'tw5-typed';
+import type { Server } from 'tiddlywiki';
 
 import { rebuild } from './packup';
 import { createDevRefreshHandler, DevRefreshWiki } from './dev-refresh';

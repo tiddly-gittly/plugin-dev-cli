@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { tmpdir } from 'os';
-import { ITiddlerFields } from 'tw5-typed';
+import type { ITiddlerFields } from 'tiddlywiki';
 import { buildLibrary } from './build';
 import { rebuild } from './packup';
 import { tiddlywiki, mkdirsForFileSync, waitForFile } from './utils';

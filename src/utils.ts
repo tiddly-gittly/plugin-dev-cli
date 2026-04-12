@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { dirname, resolve } from 'path';
-import { ITiddlyWiki } from 'tw5-typed';
+import type { ITiddlyWiki } from 'tiddlywiki';
 import { TiddlyWiki } from 'tiddlywiki';
 
 /**

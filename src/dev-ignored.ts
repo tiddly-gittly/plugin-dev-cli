@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import ignore from 'ignore';
-import type { ITiddlyWiki } from 'tw5-typed';
+import type { ITiddlyWiki } from 'tiddlywiki';
 
 // TiddlyWiki system tiddler files written back to disk during a running
 // session (e.g. StoryList, layout, palette). Watching them would cause
@@ -63,7 +63,7 @@ export const buildWatchIgnored = (
 
   const srcRoot = path.resolve(srcDir);
 
-  return (filePath: string, _stats?: fs.Stats): boolean => {
+  return (filePath: string): boolean => {
     const basename = path.basename(filePath);
     const resolvedPath = path.resolve(filePath);
     const isInSrc =

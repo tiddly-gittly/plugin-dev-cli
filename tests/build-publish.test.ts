@@ -198,9 +198,10 @@ describe('build and publish workflows', () => {
     const tiddlywiki = jest.fn(
       (
         preloadTiddlers: Record<string, unknown>[] = [],
-        _dir = '.',
+        _wikiDir = '.',
         commands: string[] = [],
       ) => {
+        void _wikiDir;
         if (commands.length === 0) {
           return fakeWiki;
         }

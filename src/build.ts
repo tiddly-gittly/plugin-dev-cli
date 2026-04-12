@@ -1,7 +1,7 @@
 import { basename, resolve } from 'path';
 import { writeFileSync, readFileSync } from 'fs';
 import chalk from 'chalk';
-import { ITiddlerFields } from 'tw5-typed';
+import type { ITiddlerFields } from 'tiddlywiki';
 import { minify as htmlMinify } from 'html-minifier-terser';
 import { rebuild } from './packup';
 import { tiddlywiki, mkdirsForFileSync, waitForFile } from './utils';

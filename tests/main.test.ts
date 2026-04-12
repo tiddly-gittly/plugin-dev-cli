@@ -69,7 +69,7 @@ describe('createProgram', () => {
     const program = createProgram(actions);
     const exitSpy = jest
       .spyOn(process, 'exit')
-      .mockImplementation((code?: number) => {
+      .mockImplementation((code?: string | number | null) => {
         throw new Error(`exit:${code ?? 0}`);
       });
 
@@ -105,7 +105,7 @@ describe('createProgram', () => {
     const program = createProgram(actions);
     const exitSpy = jest
       .spyOn(process, 'exit')
-      .mockImplementation((code?: number) => {
+      .mockImplementation((code?: string | number | null) => {
         throw new Error(`exit:${code ?? 0}`);
       });
 

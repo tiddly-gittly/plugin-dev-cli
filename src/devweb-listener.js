@@ -1,13 +1,12 @@
-/* eslint-disable import/no-commonjs */
-/* eslint-disable strict */
-'use strict';
 (function () {
+  // eslint-disable-next-line no-undef
+  const moduleExports = exports;
   // Export name and synchronous status
-  exports.name = 'devweb-listner';
-  exports.platforms = ['browser'];
-  exports.after = ['load-modules'];
-  exports.synchronous = true;
-  exports.startup = function () {
+  moduleExports.name = 'devweb-listner';
+  moduleExports.platforms = ['browser'];
+  moduleExports.after = ['load-modules'];
+  moduleExports.synchronous = true;
+  moduleExports.startup = function () {
     const ws =
       // eslint-disable-next-line no-nested-ternary
       typeof globalThis === 'undefined'
@@ -62,5 +61,3 @@
     };
   };
 })();
-/* eslint-enable strict */
-/* eslint-enable import/no-commonjs */

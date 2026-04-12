@@ -9,7 +9,7 @@ import UglifyJS from 'uglify-js';
 import CleanCSS from 'clean-css';
 import cliProgress from 'cli-progress';
 import browserslist from 'browserslist';
-import type { ITiddlerFields, ITiddlyWiki } from 'tw5-typed';
+import type { ITiddlerFields, ITiddlyWiki } from 'tiddlywiki';
 import postCssPlugin from 'esbuild-style-plugin';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
@@ -150,7 +150,7 @@ export const rebuild = async (
       bar.update(index, { plugin: path.basename(dir) });
       // 检查插件是否被修改过，缓存
       const update =
-        !pluginCache.hasOwnProperty(dir) ||
+        !Object.prototype.hasOwnProperty.call(pluginCache, dir) ||
         updateDirs.length === 0 ||
         updateDirs.some(updateDir => updateDir.startsWith(dir));
       if (!update) {
@@ -383,14 +383,12 @@ export const rebuild = async (
           if (!meta.title) {
             const parsed = path.parse(path.relative(dir, file.path));
             const tmp = path.join(plugin.title, parsed.dir, parsed.name);
-            if (tiddlers.hasOwnProperty(`${tmp}${parsed.ext}`)) {
+            if (Object.prototype.hasOwnProperty.call(tiddlers, `${tmp}${parsed.ext}`)) {
               let id = 1;
-              while (tiddlers.hasOwnProperty(`${tmp}${id}${parsed.ext}`)) {
+              while (Object.prototype.hasOwnProperty.call(tiddlers, `${tmp}${id}${parsed.ext}`)) {
                 id++;
               }
-              (meta as any).title = tiddlers.hasOwnProperty(
-                `${tmp}${id}${parsed.ext}`,
-              );
+              (meta as any).title = `${tmp}${id}${parsed.ext}`;
             } else {
               (meta as any).title = `${tmp}${parsed.ext}`;
             }
