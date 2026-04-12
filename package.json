@@ -27,7 +27,7 @@
     "prepare": "pnpm build && husky install",
     "prepublishOnly": "pnpm build --platform",
     "dev": "modern dev",
-    "build": "modern build && node ./scripts/fix-esm-imports.mjs",
+    "build": "modern build",
     "reset": "rimraf ./**/node_modules",
     "lint": "modern lint",
     "change": "modern change",
