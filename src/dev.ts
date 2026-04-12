@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import tw from 'tiddlywiki';
 import chokidar from 'chokidar';
 import { Server } from 'tw5-typed';
@@ -8,8 +9,10 @@ import { rebuild } from './packup';
 import { createDevRefreshHandler, DevRefreshWiki } from './dev-refresh';
 import { createNotifyServer } from './dev-ws-server';
 import { buildWatchIgnored } from './dev-ignored';
-import { resolveWikiListenPort } from './dev-port';
+import { createWikiPortResolver } from './dev-port';
 import { tiddlywiki } from './utils';
+
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
 // Run refresh server
 export const runDev = async (
@@ -26,13 +29,22 @@ export const runDev = async (
   const watchRoots = Array.from(
     new Set([src, wiki].map(target => path.resolve(target))),
   );
+  const listenerScriptPathCandidates = [
+    path.resolve(moduleDir, '../devweb-listener.js'),
+    path.resolve(moduleDir, 'devweb-listener.js'),
+    path.resolve(moduleDir, 'src/devweb-listener.js'),
+  ];
+  const listenerScriptPath =
+    listenerScriptPathCandidates.find(filePath => fs.existsSync(filePath)) ??
+    listenerScriptPathCandidates[0];
   const devWebListnerScript = fs
-    .readFileSync(path.resolve(__dirname, 'src/devweb-listener.js'), 'utf-8')
+    .readFileSync(listenerScriptPath, 'utf-8')
     .replace('$$$$port$$$$', `${port}`);
 
   // Watch source files and wiki files change
   const $tw1 = tiddlywiki([], wiki);
   let twServer: Server;
+  const resolveStableWikiPort = createWikiPortResolver(lan);
 
   const watcher = chokidar.watch(watchRoots, {
     ignoreInitial: true,
@@ -82,7 +94,7 @@ export const runDev = async (
       },
     );
     const serve = async () => {
-      const port = await resolveWikiListenPort(lan);
+      const port = await resolveStableWikiPort();
       $tw.boot.argv = [wiki, '--listen', `port=${port}`];
       if (lan) {
         $tw.boot.argv.push('host=0.0.0.0');

@@ -1,10 +1,10 @@
 /* eslint-disable max-lines */
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 import sha256 from 'sha256';
 import esbuild from 'esbuild';
-import { uniq } from 'lodash';
 import UglifyJS from 'uglify-js';
 import CleanCSS from 'clean-css';
 import cliProgress from 'cli-progress';
@@ -13,8 +13,8 @@ import type { ITiddlerFields, ITiddlyWiki } from 'tw5-typed';
 import postCssPlugin from 'esbuild-style-plugin';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
-import esbuildSvelte from "esbuild-svelte";
-import sveltePreprocess from "svelte-preprocess";
+import esbuildSvelte from 'esbuild-svelte';
+import sveltePreprocess from 'svelte-preprocess';
 import { esbuildPluginBrowserslist } from 'esbuild-plugin-browserslist';
 import { walkFilesSync } from './utils';
 
@@ -50,7 +50,8 @@ const nodejsBuiltinModules = [
   'zlib',
 ];
 
-const injectPath = path.resolve(__dirname, 'esbuild-inject.js');
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+const injectPath = path.resolve(moduleDir, 'esbuild-inject.js');
 const rootPath = process.cwd();
 
 // 插件构建缓存
@@ -132,10 +133,12 @@ export const rebuild = async (
     },
     cliProgress.Presets.shades_classic,
   );
-  const updateDirs = uniq(
-    updatePaths
-      .filter(file => file)
-      .map(file => path.resolve(path.dirname(file))),
+  const updateDirs = Array.from(
+    new Set(
+      updatePaths
+        .filter(file => file)
+        .map(file => path.resolve(path.dirname(file))),
+    ),
   );
   const pluginDirs = fs
     .readdirSync(baseDir)
