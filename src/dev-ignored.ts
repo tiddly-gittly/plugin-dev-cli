@@ -4,11 +4,13 @@ import ignore from 'ignore';
 import type { ITiddlyWiki } from 'tw5-typed';
 
 // TiddlyWiki system tiddler files written back to disk during a running
-// session (e.g. StoryList, layout). Watching them would cause an infinite
-// reload loop.  Matches names like:
+// session (e.g. StoryList, layout, palette). Watching them would cause
+// reload loops. Matches names like:
 //   $__StoryList.tid   $__StoryList_1.tid
 //   $__layout.tid      $__layout_1.tid
-const wikiVolatileBasenameRegExp = /^\$__(?:StoryList|layout)(?:_\d+)?\.tid$/;
+//   $__palette.tid     $__palette_1.tid
+const wikiLoopProneBasenameRegExp =
+  /^\$__(?:StoryList|layout|palette)(?:_\d+)?\.tid$/;
 
 /**
  * Build a chokidar `ignored` predicate for the dev watcher.
@@ -74,7 +76,7 @@ export const buildWatchIgnored = (
     if ($tw.boot.excludeRegExp?.test(basename)) {
       return true;
     }
-    if (wikiVolatileBasenameRegExp.test(basename)) {
+    if (wikiLoopProneBasenameRegExp.test(basename)) {
       return true;
     }
     return isIgnoredByGitignore(filePath);

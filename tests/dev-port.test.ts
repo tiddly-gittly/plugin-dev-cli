@@ -1,4 +1,8 @@
-import { getWikiListenHost, resolveWikiListenPort } from '@/dev-port';
+import {
+  createWikiPortResolver,
+  getWikiListenHost,
+  resolveWikiListenPort,
+} from '@/dev-port';
 
 const mockGetPort = jest.fn();
 
@@ -38,5 +42,21 @@ describe('dev port selection', () => {
   test('getWikiListenHost returns expected host by mode', () => {
     expect(getWikiListenHost(false)).toBe('127.0.0.1');
     expect(getWikiListenHost(true)).toBe('0.0.0.0');
+  });
+
+  test('createWikiPortResolver reuses resolved port across restarts', async () => {
+    mockGetPort.mockResolvedValue(53943);
+    const resolveStablePort = createWikiPortResolver(false);
+
+    const firstPort = await resolveStablePort();
+    const secondPort = await resolveStablePort();
+
+    expect(firstPort).toBe(53943);
+    expect(secondPort).toBe(53943);
+    expect(mockGetPort).toHaveBeenCalledTimes(1);
+    expect(mockGetPort).toHaveBeenCalledWith({
+      port: 8080,
+      host: '127.0.0.1',
+    });
   });
 });

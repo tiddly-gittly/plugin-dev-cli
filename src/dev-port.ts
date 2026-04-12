@@ -7,3 +7,16 @@ export const resolveWikiListenPort = async (lan?: boolean) => {
   const host = getWikiListenHost(lan);
   return getPort({ port: 8080, host });
 };
+
+export const createWikiPortResolver = (lan?: boolean) => {
+  let resolvedPort: number | undefined;
+
+  return async () => {
+    if (resolvedPort !== undefined) {
+      return resolvedPort;
+    }
+
+    resolvedPort = await resolveWikiListenPort(lan);
+    return resolvedPort;
+  };
+};
