@@ -1,6 +1,4 @@
-import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import tw from 'tiddlywiki';
 import chokidar from 'chokidar';
 
@@ -9,9 +7,8 @@ import { createDevRefreshHandler, DevRefreshWiki } from './dev-refresh';
 import { createNotifyServer } from './dev-ws-server';
 import { buildWatchIgnored } from './dev-ignored';
 import { createWikiPortResolver } from './dev-port';
+import { renderDevWebListenerScript } from './devweb-listener-template';
 import { tiddlywiki } from './utils';
-
-const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
 type ClosableServer = {
   once: (event: string, listener: (...args: unknown[]) => void) => void;
@@ -33,17 +30,7 @@ export const runDev = async (
   const watchRoots = Array.from(
     new Set([src, wiki].map(target => path.resolve(target))),
   );
-  const listenerScriptPathCandidates = [
-    path.resolve(moduleDir, '../devweb-listener.js'),
-    path.resolve(moduleDir, 'devweb-listener.js'),
-    path.resolve(moduleDir, 'src/devweb-listener.js'),
-  ];
-  const listenerScriptPath =
-    listenerScriptPathCandidates.find(filePath => fs.existsSync(filePath)) ??
-    listenerScriptPathCandidates[0];
-  const devWebListnerScript = fs
-    .readFileSync(listenerScriptPath, 'utf-8')
-    .replace('$$$$port$$$$', `${port}`);
+  const devWebListnerScript = renderDevWebListenerScript(port);
 
   // Watch source files and wiki files change
   const $tw1 = tiddlywiki([], wiki);
