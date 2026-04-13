@@ -64,6 +64,27 @@ describe('createProgram', () => {
     });
   });
 
+  test('keeps write-wiki disabled by default', async () => {
+    const actions = createActions();
+    const program = createProgram(actions);
+
+    await program.parseAsync([
+      'node',
+      'tiddlywiki-plugin-dev',
+      'dev',
+      '--wiki',
+      'wiki-dir',
+      '--src',
+      'src-dir',
+    ]);
+
+    expect(actions.runDev).toHaveBeenCalledWith('wiki-dir', 'src-dir', {
+      writeWiki: undefined,
+      excludeFilter: undefined,
+      lan: undefined,
+    });
+  });
+
   test('routes build --library to buildLibrary and exits cleanly', async () => {
     const actions = createActions();
     const program = createProgram(actions);

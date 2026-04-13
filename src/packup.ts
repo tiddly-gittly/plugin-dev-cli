@@ -11,7 +11,7 @@ import cliProgress from 'cli-progress';
 import browserslist from 'browserslist';
 import type { ITiddlerFields, ITiddlyWiki } from 'tiddlywiki';
 import postCssPlugin from 'esbuild-style-plugin';
-import tailwindcss from 'tailwindcss';
+import tailwindcssPostcss from '@tailwindcss/postcss';
 import autoprefixer from 'autoprefixer';
 import esbuildSvelte from 'esbuild-svelte';
 import sveltePreprocess from 'svelte-preprocess';
@@ -332,7 +332,7 @@ export const rebuild = async (
           }),
           postCssPlugin({
             postcss: {
-              plugins: [tailwindcss as any, autoprefixer as any],
+              plugins: [tailwindcssPostcss() as any, autoprefixer as any],
             },
           }),
           esbuildSvelte({
