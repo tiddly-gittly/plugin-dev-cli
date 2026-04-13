@@ -7,6 +7,7 @@ import { createDevRefreshHandler, DevRefreshWiki } from './dev-refresh';
 import { createNotifyServer } from './dev-ws-server';
 import { buildWatchIgnored } from './dev-ignored';
 import { createWikiPortResolver } from './dev-port';
+import { buildListenArgs } from './dev-listen-args';
 import { renderDevWebListenerScript } from './devweb-listener-template';
 import { tiddlywiki } from './utils';
 
@@ -86,10 +87,12 @@ export const runDev = async (
     );
     const serve = async () => {
       const port = await resolveStableWikiPort();
-      $tw.boot.argv = [wiki, '--listen', `port=${port}`];
-      if (lan) {
-        $tw.boot.argv.push('host=0.0.0.0');
-      }
+      $tw.boot.argv = buildListenArgs({
+        wikiPath: wiki,
+        port,
+        lan,
+        writeWiki,
+      });
       $tw.boot.boot();
     };
     const startServer = () => {
