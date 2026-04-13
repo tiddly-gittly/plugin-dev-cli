@@ -34,7 +34,12 @@ export const runDev = async (
   const devWebListnerScript = renderDevWebListenerScript(port);
 
   // Watch source files and wiki files change
-  const $tw1 = tiddlywiki([], wiki);
+  // Preload SyncFilter override for the scanner instance too, so the
+  // filesystem syncadaptor doesn't dispatch save tasks during scanning.
+  const scannerPreload = writeWiki
+    ? []
+    : [{ title: '$:/config/SyncFilter', text: '[all[]] -[all[]]' }];
+  const $tw1 = tiddlywiki(scannerPreload, wiki);
   let twServer: ClosableServer | undefined;
   const resolveStableWikiPort = createWikiPortResolver(lan);
 

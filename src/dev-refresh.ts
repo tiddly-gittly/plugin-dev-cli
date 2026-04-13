@@ -47,6 +47,18 @@ export const createDevRefreshHandler = ({
         type: 'application/javascript',
         'module-type': 'startup',
       });
+
+      // When not writing back to wiki files, override the sync filter to match
+      // zero tiddlers. This prevents the server-side filesystem syncadaptor from
+      // dispatching save/delete tasks even when tiddlywiki/filesystem is declared
+      // in the project's tiddlywiki.info (e.g. basic client-server edition).
+      if (!writeWiki) {
+        wiki.preloadTiddler({
+          title: '$:/config/SyncFilter',
+          text: '[all[]] -[all[]]',
+        });
+      }
+
       wiki.preloadTiddlerArray(plugins);
 
       if (writeWiki) {
