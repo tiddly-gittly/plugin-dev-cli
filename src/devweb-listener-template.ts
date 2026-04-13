@@ -6,20 +6,20 @@ const listenerTemplate = `(function () {
   moduleExports.synchronous = true;
   moduleExports.startup = function () {
     const ws =
-      typeof globalThis === 'undefined'
-        ? typeof window === 'undefined'
-          ? undefined
-          : window.WebSocket
-        : globalThis.WebSocket;
-    if (ws === undefined) {
+      (typeof globalThis !== 'undefined' && globalThis.WebSocket) ||
+      (typeof window !== 'undefined' ? window.WebSocket : undefined);
+    if (!ws) {
       console.error(
         '[Modern.TiddlyDev]',
         'Unsupported broswer, need WebSocket support',
       );
+      return;
     }
     const port = __PORT__;
+    const protocol =
+      document.location.protocol === 'https:' ? 'wss' : 'ws';
     const host = document.location.hostname;
-    const socket = new WebSocket(\`ws://\${host}:\${port}\`);
+    const socket = new ws(protocol + '://' + host + ':' + port);
     socket.onopen = () => {
       console.debug(
         '[Modern.TiddlyDev]',

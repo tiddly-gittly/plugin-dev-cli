@@ -8,22 +8,23 @@
   moduleExports.synchronous = true;
   moduleExports.startup = function () {
     const ws =
-      // eslint-disable-next-line no-nested-ternary
-      typeof globalThis === 'undefined'
-        ? typeof window === 'undefined'
-          ? undefined
-          : window.WebSocket
-        : globalThis.WebSocket;
-    if (ws === undefined) {
+      (typeof globalThis !== 'undefined' && globalThis.WebSocket) ||
+      // eslint-disable-next-line no-undef
+      (typeof window !== 'undefined' ? window.WebSocket : undefined);
+    if (!ws) {
       console.error(
         '[Modern.TiddlyDev]',
         'Unsupported broswer, need WebSocket support',
       );
+      return;
     }
     // eslint-disable-next-line no-undef
     const port = $$$$port$$$$;
+    const protocol =
+      // eslint-disable-next-line no-undef
+      document.location.protocol === 'https:' ? 'wss' : 'ws';
     const host = document.location.hostname;
-    const socket = new WebSocket(`ws://${host}:${port}`);
+    const socket = new ws(`${protocol}://${host}:${port}`);
     /*
      * Note: socket.send('pong') will not work,
      *       and onmessage will not handle ping message.
