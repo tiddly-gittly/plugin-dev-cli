@@ -61,7 +61,7 @@ describe('createDevRefreshHandler', () => {
       t => t.title === '$:/config/SyncFilter',
     );
     expect(syncFilterTiddler).toBeDefined();
-    expect(syncFilterTiddler?.text).toBe('[all[]] -[all[]]');
+    expect(syncFilterTiddler?.text).toBe('[all[]limit[0]]');
     // filesystem/tiddlyweb extra plugins must NOT be appended
     expect(state.plugins).toEqual([]);
   });
