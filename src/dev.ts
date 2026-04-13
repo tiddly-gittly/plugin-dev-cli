@@ -38,7 +38,7 @@ export const runDev = async (
   // filesystem syncadaptor doesn't dispatch save tasks during scanning.
   const scannerPreload = writeWiki
     ? []
-    : [{ title: '$:/config/SyncFilter', text: '[all[]limit[0]]' }];
+    : [{ title: '$:/config/SyncFilter', text: '' }];
   const $tw1 = tiddlywiki(scannerPreload, wiki);
   let twServer: ClosableServer | undefined;
   const resolveStableWikiPort = createWikiPortResolver(lan);
