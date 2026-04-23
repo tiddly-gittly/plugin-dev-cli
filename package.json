@@ -29,7 +29,7 @@
     "dev": "modern dev",
     "build": "modern build && node scripts/fix-dist-relative-js-extension.cjs",
     "reset": "rimraf ./**/node_modules",
-    "lint": "pnpm exec eslint . --ignore-pattern dist/** --ignore-pattern node_modules/** --ignore-pattern output/** --ignore-pattern output_resource/**",
+    "lint": "pnpm exec eslint . --ignore-pattern dist/** --ignore-pattern node_modules/** --ignore-pattern output/** --ignore-pattern output_resource/** --no-error-on-unmatched-pattern",
     "change": "modern change",
     "bump": "modern bump",
     "pre": "modern pre",
