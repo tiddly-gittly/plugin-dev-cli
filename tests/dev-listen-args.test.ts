@@ -1,18 +1,13 @@
 import { buildListenArgs } from '@/dev-listen-args';
 
 describe('buildListenArgs', () => {
-  test('defaults to localhost and read-only mode', () => {
+  test('defaults to localhost without forcing writer restrictions', () => {
     const args = buildListenArgs({
       wikiPath: 'wiki-dir',
       port: 8080,
     });
 
-    expect(args).toEqual([
-      'wiki-dir',
-      '--listen',
-      'port=8080',
-      'writers=(authenticated)',
-    ]);
+    expect(args).toEqual(['wiki-dir', '--listen', 'port=8080']);
   });
 
   test('enables lan host when --lan is set', () => {
@@ -22,16 +17,10 @@ describe('buildListenArgs', () => {
       lan: true,
     });
 
-    expect(args).toEqual([
-      'wiki-dir',
-      '--listen',
-      'port=8080',
-      'host=0.0.0.0',
-      'writers=(authenticated)',
-    ]);
+    expect(args).toEqual(['wiki-dir', '--listen', 'port=8080', 'host=0.0.0.0']);
   });
 
-  test('does not force writers restriction when --write-wiki is set', () => {
+  test('keeps args stable when --write-wiki is set', () => {
     const args = buildListenArgs({
       wikiPath: 'wiki-dir',
       port: 8080,

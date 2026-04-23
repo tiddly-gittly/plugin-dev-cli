@@ -1,7 +1,7 @@
 {
   "name": "tiddlywiki-plugin-dev",
   "author": "Sttot",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "type": "module",
   "main": "./dist/js/index.js",
   "bin": {
@@ -39,6 +39,7 @@
     "new": "modern new",
     "check": "tsc --noEmit && pnpm lint && pnpm test",
     "test": "pnpm exec jest --passWithNoTests",
+    "test:e2e": "pnpm exec jest -c jest.e2e.config.mjs --runInBand",
     "upgrade": "modern upgrade"
   },
   "engines": {
@@ -117,6 +118,7 @@
     "husky": "^9.1.7",
     "jest": "^30.3.0",
     "lint-staged": "^16.4.0",
+    "playwright-chromium": "^1.59.1",
     "prettier": "^3.8.2",
     "pug": "^3.0.4",
     "rimraf": "^6.1.3",
