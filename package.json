@@ -1,7 +1,7 @@
 {
   "name": "tiddlywiki-plugin-dev",
   "author": "Sttot",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "type": "module",
   "main": "./dist/js/index.js",
   "bin": {
