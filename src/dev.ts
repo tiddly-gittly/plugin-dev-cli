@@ -27,11 +27,15 @@ export const runDev = async (
   },
 ) => {
   const { lan, writeWiki, excludeFilter } = configs;
-  const { port, notifyRefresh } = await createNotifyServer();
+  const { attachToHttpServer, notifyRefresh } = await createNotifyServer();
+  // Tracks the detach function for the currently active server's upgrade handler.
+  let detachWs: (() => void) | undefined;
   const watchRoots = Array.from(
     new Set([src, wiki].map(target => path.resolve(target))),
   );
-  const devWebListnerScript = renderDevWebListenerScript(port);
+  // No longer need a separate WS port — the client connects to the same
+  // host:port as the wiki page, so it works through SSH / VS Code tunnels.
+  const devWebListnerScript = renderDevWebListenerScript();
 
   // Watch source files and wiki files change
   // Preload SyncFilter override for the scanner instance too, so the
@@ -54,11 +58,12 @@ export const runDev = async (
   });
   const reportRefreshError = (error: unknown, changedPaths: string[]) => {
     const changed = changedPaths.filter(Boolean);
+    const timestamp = new Date().toLocaleTimeString();
 
     console.error(
       changed.length > 0
-        ? `Compilation failed for: ${changed.join(', ')}`
-        : 'Compilation failed during initial build.',
+        ? `[${timestamp}] [refresh] Compilation failed for: ${changed.join(', ')}`
+        : `[${timestamp}] [refresh] Compilation failed during initial build.`,
     );
     console.error('Waiting for the next change to retry...');
     console.error(error);
@@ -86,7 +91,13 @@ export const runDev = async (
           finish(false);
         };
         newTwServer.once('error', onServerError);
-        newTwServer.once('listening', () => finish(true));
+        newTwServer.once('listening', () => {
+          // Detach the upgrade handler from the previous server (if any)
+          // before attaching to the new one, so we never leak listeners.
+          detachWs?.();
+          detachWs = attachToHttpServer(newTwServer);
+          finish(true);
+        });
         twServer = newTwServer;
       },
     );
@@ -141,6 +152,13 @@ export const runDev = async (
     reportError: reportRefreshError,
   });
   const triggerRefresh = (changedPath?: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    if (changedPath) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `[${timestamp}] [watch] File changed: ${changedPath}`,
+      );
+    }
     refresh(changedPath).catch(error => reportRefreshError(error, []));
   };
 

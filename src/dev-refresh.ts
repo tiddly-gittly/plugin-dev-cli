@@ -38,7 +38,26 @@ export const createDevRefreshHandler = ({
 }: DevRefreshHandlerOptions) =>
   createQueuedWatchHandler({
     runBatch: async changedPaths => {
+      const batchStart = Date.now();
+      const fileList = changedPaths.filter(Boolean);
+      // eslint-disable-next-line no-console
+      console.log(
+        `\n[Modern.TiddlyDev] [refresh] Refresh started - ${fileList.length} file(s) changed`,
+      );
+      if (fileList.length > 0) {
+        fileList.forEach(f => {
+          // eslint-disable-next-line no-console
+          console.log(`    - ${f}`);
+        });
+      }
+
       const plugins = await rebuildPlugins(changedPaths);
+      const rebuildMs = Date.now() - batchStart;
+      // eslint-disable-next-line no-console
+      console.log(
+        `[Modern.TiddlyDev] [refresh] Plugins rebuilt in ${rebuildMs}ms`,
+      );
+
       const wiki = createWiki();
 
       wiki.preloadTiddler({
@@ -67,7 +86,17 @@ export const createDevRefreshHandler = ({
 
       const started = await startServer(wiki, changedPaths);
       if (started) {
+        const totalMs = Date.now() - batchStart;
+        // eslint-disable-next-line no-console
+        console.log(
+          `[Modern.TiddlyDev] [refresh] Server restarted in ${totalMs}ms total`,
+        );
         notifyRefresh();
+      } else {
+        // eslint-disable-next-line no-console
+        console.error(
+          `[Modern.TiddlyDev] [refresh] Server failed to start after ${Date.now() - batchStart}ms`,
+        );
       }
     },
     onError: reportError,
