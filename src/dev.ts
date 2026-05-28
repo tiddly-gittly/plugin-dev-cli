@@ -27,7 +27,7 @@ export const runDev = async (
   },
 ) => {
   const { lan, writeWiki, excludeFilter } = configs;
-  const { attachToHttpServer, notifyRefresh } = await createNotifyServer();
+  const { attachToHttpServer, closeAllClients, notifyRefresh } = await createNotifyServer();
   // Tracks the detach function for the currently active server's upgrade handler.
   let detachWs: (() => void) | undefined;
   const watchRoots = Array.from(
@@ -118,11 +118,9 @@ export const runDev = async (
       });
     };
     if (twServer) {
-      // Force-close all active connections (including dev WebSocket) so the
-      // HTTP server actually shuts down.  Without this, an open WebSocket
-      // keeps the server alive and the 'close' event never fires — blocking
-      // all subsequent file-change refreshes.
-      (twServer as any).closeAllConnections?.();
+      // Close all WebSocket clients first — upgraded connections are not
+      // tracked by http.Server so closeAllConnections() won't reach them.
+      closeAllClients();
       twServer.once('close', startServer);
       twServer.close();
     } else {

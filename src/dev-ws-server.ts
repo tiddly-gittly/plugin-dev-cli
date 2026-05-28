@@ -27,6 +27,8 @@ export interface NotifyServer {
    * listener so the handler does not leak across server restarts.
    */
   attachToHttpServer: (httpServer: HttpServer) => () => void;
+  /** Close all connected WebSocket clients so the HTTP server can shut down. */
+  closeAllClients: () => void;
   /** Notify all connected browser clients to refresh. */
   notifyRefresh: () => void;
 }
@@ -108,5 +110,12 @@ export const createNotifyServer = async (): Promise<NotifyServer> => {
     }
   };
 
-  return { server, attachToHttpServer, notifyRefresh };
+  /** Terminate all WebSocket clients so the underlying HTTP server can close. */
+  const closeAllClients = () => {
+    for (const ws of server.clients) {
+      ws.terminate();
+    }
+  };
+
+  return { server, attachToHttpServer, closeAllClients, notifyRefresh };
 };
