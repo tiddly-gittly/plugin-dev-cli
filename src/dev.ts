@@ -118,6 +118,11 @@ export const runDev = async (
       });
     };
     if (twServer) {
+      // Force-close all active connections (including dev WebSocket) so the
+      // HTTP server actually shuts down.  Without this, an open WebSocket
+      // keeps the server alive and the 'close' event never fires — blocking
+      // all subsequent file-change refreshes.
+      (twServer as any).closeAllConnections?.();
       twServer.once('close', startServer);
       twServer.close();
     } else {
