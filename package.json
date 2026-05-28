@@ -5,7 +5,7 @@
   "type": "module",
   "main": "./dist/js/index.js",
   "bin": {
-    "tiddlywiki-plugin-dev": "./dist/js/main.js"
+    "tiddlywiki-plugin-dev": "dist/js/main.js"
   },
   "types": "./dist/index.d.ts",
   "license": "MIT",
@@ -16,8 +16,8 @@
     "tiddlywiki-theme"
   ],
   "repository": {
-    "type ": "git",
-    "url": "https://github.com/tiddly-gittly/plugin-dev-cli"
+    "type": "git",
+    "url": "git+https://github.com/tiddly-gittly/plugin-dev-cli.git"
   },
   "homepage": "https://tiddly-gittly.github.io/Modern.TiddlyDev/",
   "bugs": {
