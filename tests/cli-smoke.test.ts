@@ -13,22 +13,58 @@ const quoteShellArg = (value: string) =>
     ? `"${value.replace(/"/g, '""')}"`
     : `'${value.replace(/'/g, `'"'"'`)}'`;
 
-const runShell = (command: string, cwd = rootDir) =>
-  execSync(command, {
-    cwd,
-    encoding: 'utf8',
-    env: process.env,
-    shell,
-  });
+const runShell = (command: string, cwd = rootDir) => {
+  try {
+    return execSync(command, {
+      cwd,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1',
+      },
+      shell,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+  } catch (error: any) {
+    const stderr = error.stderr || '';
+    const stdout = error.stdout || '';
+    const combined = `${stderr}\n${stdout}`;
+    // pnpm >= 11 exits non-zero on ERR_PNPM_IGNORED_BUILDS when a
+    // dependency has build scripts but the workspace hasn't approved
+    // them.  The packages were installed successfully though, so treat
+    // this as non-fatal for smoke-test purposes.
+    if (combined.includes('ERR_PNPM_IGNORED_BUILDS')) {
+      return stdout;
+    }
+    throw new Error(
+      `Command failed: ${command}\nSTDERR:\n${stderr}\nSTDOUT:\n${stdout}`,
+      { cause: error },
+    );
+  }
+};
 
 let installedBinDir = '';
+let installDir = '';
 
-const runNode = (args: string[]) =>
-  execFileSync(nodeCommand, args, {
-    cwd: rootDir,
-    encoding: 'utf8',
-    env: process.env,
-  });
+const runNode = (args: string[]) => {
+  try {
+    return execFileSync(nodeCommand, args, {
+      cwd: rootDir,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1',
+      },
+    });
+  } catch (error: any) {
+    const stderr = error.stderr || '';
+    const stdout = error.stdout || '';
+    throw new Error(
+      `Command failed: ${args.join(' ')}\nSTDERR:\n${stderr}\nSTDOUT:\n${stdout}`,
+      { cause: error },
+    );
+  }
+};
 
 const runBin = (args: string[]) => {
   const binCommand = path.join(
@@ -41,19 +77,29 @@ const runBin = (args: string[]) => {
   if (process.platform === 'win32') {
     const quotedArgs = args.map(arg => `"${arg}"`).join(' ');
 
-    return runShell(`${quoteShellArg(binCommand)} ${quotedArgs}`, path.dirname(installedBinDir));
+    return runShell(`${quoteShellArg(binCommand)} ${quotedArgs}`, installDir);
   }
 
-  return execFileSync(binCommand, args, {
-    cwd: path.dirname(installedBinDir),
-    encoding: 'utf8',
-    env: process.env,
-  });
+  try {
+    return execFileSync(binCommand, args, {
+      cwd: installDir,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1',
+      },
+    });
+  } catch (error: any) {
+    const stderr = error.stderr || '';
+    const stdout = error.stdout || '';
+    throw new Error(
+      `Command failed: ${binCommand} ${args.join(' ')}\nSTDERR:\n${stderr}\nSTDOUT:\n${stdout}`,
+      { cause: error },
+    );
+  }
 };
 
 describe('built cli smoke', () => {
-  let installDir = '';
-
   beforeAll(() => {
     runShell('pnpm build');
 

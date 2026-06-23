@@ -21,10 +21,19 @@
 
     // Connect to the same host:port as the wiki page via /__dev_ws path.
     // This means only one port needs to be forwarded through SSH / VS Code tunnels.
+    // The build generation lets the dev server decide, at connection time,
+    // whether this page is from an older build and must reload. When this
+    // static reference module is used the generation defaults to 0.
+    const generation = 0;
     // eslint-disable-next-line no-undef
     const protocol = document.location.protocol === 'https:' ? 'wss' : 'ws';
     // eslint-disable-next-line no-undef
-    const url = protocol + '://' + document.location.host + '/__dev_ws';
+    const url =
+      protocol +
+      '://' +
+      document.location.host +
+      '/__dev_ws?gen=' +
+      generation;
     let reconnectDelay = 1000;
     const maxReconnectDelay = 10000;
     let disposed = false;

@@ -1,6 +1,16 @@
 
 # tiddlywiki-plugin-dev
 
+## 0.5.12
+
+### Patch Changes
+
+- Fixed server restart deadlock: `closeServerForRestart()` now forcibly destroys lingering TCP sockets via `closeAllConnections()`, so the replacement server starts immediately even when browser tabs hold keep-alive connections. This prevents "Network Error" when using `--write-wiki`.
+- Fixed stale tabs not refreshing after a server restart by introducing a build generation mechanism. The WebSocket listener script bakes the generation into `?gen=` query parameter; the dev server compares it on reconnect and immediately refreshes stale tabs.
+- Fixed browser-initiated saves killing the server mid-flight in write-wiki mode: the injected frontend script now hooks `th-saving-tiddler` / `th-deleting-tiddler` and sends `save-start` / `save-end` messages over WebSocket. The dev server defers chokidar-triggered restarts while the browser is writing files, flushing deferred changes after all saves complete.
+- Added `pnpm-workspace.yaml` with `allowBuilds` entries and dev dependencies (postcss-load-config, tsx) to fix pnpm build issues.
+- Improved smoke test reliability.
+
 ## 0.4.1
 
 ### Patch Changes

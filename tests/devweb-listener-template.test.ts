@@ -49,7 +49,7 @@ describe('devweb listener template', () => {
 
     startup?.();
 
-    expect(createdUrls).toEqual(['ws://127.0.0.1:8081/__dev_ws']);
+    expect(createdUrls).toEqual(['ws://127.0.0.1:8081/__dev_ws?gen=0']);
 
     expect(instances.length).toBe(1);
     instances[0].onmessage?.({ data: 'refresh' });
@@ -99,6 +99,94 @@ describe('devweb listener template', () => {
     const startup = (context.exports as { startup?: () => void }).startup;
     startup?.();
 
-    expect(createdUrls).toEqual(['wss://example.com:443/__dev_ws']);
+    expect(createdUrls).toEqual(['wss://example.com:443/__dev_ws?gen=0']);
+  });
+
+  test('bakes the build generation into the WebSocket URL query string', () => {
+    const createdUrls: string[] = [];
+
+    class FakeSocket {
+      onopen?: () => void;
+      onmessage?: (event: { data: string }) => void;
+      onclose?: () => void;
+
+      constructor(url: string) {
+        createdUrls.push(url);
+      }
+
+      close() {
+        // noop
+      }
+    }
+
+    const context: Record<string, unknown> = {
+      exports: {},
+      globalThis: { WebSocket: FakeSocket },
+      window: { WebSocket: FakeSocket },
+      document: {
+        location: {
+          protocol: 'https:',
+          host: 'example.com:443',
+          reload: jest.fn(),
+        },
+      },
+      console: {
+        debug: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+      },
+    };
+
+    const script = renderDevWebListenerScript(42);
+    vm.runInNewContext(script, context);
+
+    const startup = (context.exports as { startup?: () => void }).startup;
+    startup?.();
+
+    expect(createdUrls).toEqual(['wss://example.com:443/__dev_ws?gen=42']);
+  });
+
+  test('defaults generation to 0 when no argument is passed', () => {
+    const createdUrls: string[] = [];
+
+    class FakeSocket {
+      onopen?: () => void;
+      onmessage?: (event: { data: string }) => void;
+      onclose?: () => void;
+
+      constructor(url: string) {
+        createdUrls.push(url);
+      }
+
+      close() {
+        // noop
+      }
+    }
+
+    const context: Record<string, unknown> = {
+      exports: {},
+      globalThis: { WebSocket: FakeSocket },
+      window: { WebSocket: FakeSocket },
+      document: {
+        location: {
+          protocol: 'http:',
+          host: 'localhost:8080',
+          reload: jest.fn(),
+        },
+      },
+      console: {
+        debug: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+      },
+    };
+
+    const script = renderDevWebListenerScript();
+    vm.runInNewContext(script, context);
+
+    const startup = (context.exports as { startup?: () => void }).startup;
+    startup?.();
+
+    expect(createdUrls).toEqual(['ws://localhost:8080/__dev_ws?gen=0']);
   });
 });

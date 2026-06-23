@@ -9,6 +9,7 @@ import { buildWatchIgnored } from './dev-ignored';
 import { createWikiPortResolver } from './dev-port';
 import { buildListenArgs } from './dev-listen-args';
 import { renderDevWebListenerScript } from './devweb-listener-template';
+import { closeServerForRestart } from './dev-server-close';
 import { tiddlywiki } from './utils';
 
 type ClosableServer = {
@@ -27,15 +28,48 @@ export const runDev = async (
   },
 ) => {
   const { lan, writeWiki, excludeFilter } = configs;
-  const { attachToHttpServer, closeAllClients, notifyRefresh } = await createNotifyServer();
+  const { attachToHttpServer, closeAllClients, notifyRefresh, setBuildGeneration, onSaveBusyChange } =
+    await createNotifyServer();
   // Tracks the detach function for the currently active server's upgrade handler.
   let detachWs: (() => void) | undefined;
   const watchRoots = Array.from(
     new Set([src, wiki].map(target => path.resolve(target))),
   );
-  // No longer need a separate WS port — the client connects to the same
-  // host:port as the wiki page, so it works through SSH / VS Code tunnels.
-  const devWebListnerScript = renderDevWebListenerScript();
+  // Monotonically increasing build counter so the WS server can tell whether
+  // a reconnecting client is from an older page and must reload.
+  let buildGeneration = 0;
+  const nextGeneration = () => buildGeneration;
+  // When a browser tab is saving tiddlers to disk (e.g. bulk-installing
+  // plugins, editing in write-wiki mode), pause server restarts so the
+  // save isn't interrupted mid-flight by a server shutdown.
+  let saveBusy = false;
+  // Paths that changed while the browser was saving.  Flushed when save ends.
+  let deferredPaths: string[] | undefined;
+  onSaveBusyChange(busy => {
+    saveBusy = busy;
+    if (busy) {
+      // eslint-disable-next-line no-console
+      console.log(
+        '[Modern.TiddlyDev] [save] Browser is writing files — deferring server restarts',
+      );
+    } else {
+      // eslint-disable-next-line no-console
+      console.log(
+        '[Modern.TiddlyDev] [save] Browser write finished — flushing deferred changes',
+      );
+      const paths = deferredPaths;
+      deferredPaths = undefined;
+      if (paths && paths.length > 0) {
+        // eslint-disable-next-line no-console
+        console.log(
+          `[Modern.TiddlyDev] [save] ${paths.length} file(s) changed during save`,
+        );
+        // Trigger one refresh for all deferred paths so the server picks up
+        // any new/changed plugins that were written during the save burst.
+        triggerRefresh();
+      }
+    }
+  });
 
   // Watch source files and wiki files change
   // Preload SyncFilter override for the scanner instance too, so the
@@ -71,6 +105,7 @@ export const runDev = async (
   const startWikiServer = async (
     wikiRuntime: DevRefreshWiki,
     changedPaths: string[],
+    generation: number,
   ) => {
     const $tw = wikiRuntime.runtime as ReturnType<typeof tw.TiddlyWiki>;
     let resolve: (started: boolean) => void;
@@ -96,6 +131,9 @@ export const runDev = async (
           // before attaching to the new one, so we never leak listeners.
           detachWs?.();
           detachWs = attachToHttpServer(newTwServer);
+          // Tell the WS server which generation this build is so it can
+          // immediately tell stale re-connecting tabs to reload.
+          setBuildGeneration(generation);
           finish(true);
         });
         twServer = newTwServer;
@@ -118,11 +156,14 @@ export const runDev = async (
       });
     };
     if (twServer) {
-      // Close all WebSocket clients first — upgraded connections are not
-      // tracked by http.Server so closeAllConnections() won't reach them.
-      closeAllClients();
-      twServer.once('close', startServer);
-      twServer.close();
+      // Use closeServerForRestart to forcibly destroy every lingering TCP
+      // socket so the 'close' event fires immediately — even when browser
+      // tabs still hold keep-alive connections (the root cause of the
+      // "server doesn't restart until all tabs are closed" bug in 0.5.11).
+      closeServerForRestart(twServer, {
+        closeWsClients: closeAllClients,
+        onClosed: startServer,
+      });
     } else {
       startServer();
     }
@@ -130,11 +171,18 @@ export const runDev = async (
     return wait;
   };
   const refresh = createDevRefreshHandler({
-    listenerScript: devWebListnerScript,
+    renderListenerScript: renderDevWebListenerScript,
+    nextGeneration,
     writeWiki,
     rebuildPlugins: async changedPaths => {
       $tw1.wiki.deleteTiddler('$:/Modern.TiddlyDev/devWebsocket/listener');
-      return rebuild($tw1, src, changedPaths, true, excludeFilter);
+      const plugins = await rebuild($tw1, src, changedPaths, true, excludeFilter);
+      // Advance the generation *after* the build succeeds so the new page
+      // will be tagged with the next generation. On reconnect the WS server
+      // compares the client's gen against `currentGeneration` and refreshes
+      // any stale tabs.
+      buildGeneration++;
+      return plugins;
     },
     createWiki: () => {
       const $tw = tw.TiddlyWiki();
@@ -155,6 +203,16 @@ export const runDev = async (
     reportError: reportRefreshError,
   });
   const triggerRefresh = (changedPath?: string) => {
+    // While the browser is saving files to disk, defer all chokidar events
+    // so the server isn't restarted mid-save.
+    if (saveBusy) {
+      if (changedPath) {
+        if (!deferredPaths) deferredPaths = [];
+        deferredPaths.push(changedPath);
+      }
+      return;
+    }
+
     const timestamp = new Date().toLocaleTimeString();
     if (changedPath) {
       // eslint-disable-next-line no-console

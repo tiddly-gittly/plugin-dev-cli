@@ -283,9 +283,9 @@ const createTiddlerFromBrowser = async (
 };
 
 describe('dev mode Playwright e2e', () => {
-  let browser: Browser;
-  let context: BrowserContext;
-  let page: Page;
+  let browser: Browser | undefined;
+  let context: BrowserContext | undefined;
+  let page: Page | undefined;
 
   beforeAll(async () => {
     execSync('pnpm build', {
@@ -294,20 +294,26 @@ describe('dev mode Playwright e2e', () => {
       env: process.env,
       shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh',
     });
-    browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch({
+      headless: true,
+      executablePath: process.env.CHROMIUM_PATH || undefined,
+    });
   }, 180000);
 
   beforeEach(async () => {
+    if (!browser) {
+      throw new Error('Browser not launched');
+    }
     context = await browser.newContext();
     page = await context.newPage();
   });
 
   afterEach(async () => {
-    await context.close();
+    await context?.close();
   });
 
   afterAll(async () => {
-    await browser.close();
+    await browser?.close();
   });
 
   test('default dev mode keeps the web UI editable without writing new wiki files', async () => {
@@ -323,12 +329,12 @@ describe('dev mode Playwright e2e', () => {
       const title = `PlaywrightDev${Date.now()}`;
       const text = 'Created in default dev mode';
 
-      await page.goto(server.url, { waitUntil: 'domcontentloaded' });
+      await page!.goto(server.url, { waitUntil: 'domcontentloaded' });
       const status = await fetchStatus(server.url);
       expect(status.read_only).toBe(false);
 
       const beforeFiles = snapshotWikiFiles(fixture.wikiDir);
-      await createTiddlerFromBrowser(page, title, text);
+      await createTiddlerFromBrowser(page!, title, text);
       await new Promise(resolve => setTimeout(resolve, 2500));
 
       const afterFiles = snapshotWikiFiles(fixture.wikiDir);
@@ -356,12 +362,12 @@ describe('dev mode Playwright e2e', () => {
       const title = `PlaywrightWiki${Date.now()}`;
       const text = 'Created in write-wiki mode';
 
-      await page.goto(server.url, { waitUntil: 'domcontentloaded' });
+      await page!.goto(server.url, { waitUntil: 'domcontentloaded' });
       const status = await fetchStatus(server.url);
       expect(status.read_only).toBe(false);
 
       const beforeFiles = snapshotWikiFiles(fixture.wikiDir);
-      await createTiddlerFromBrowser(page, title, text);
+      await createTiddlerFromBrowser(page!, title, text);
       await waitFor(
         () => findSavedTiddler(fixture.wikiDir, title) !== undefined,
         15000,

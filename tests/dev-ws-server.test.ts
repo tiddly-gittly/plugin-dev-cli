@@ -59,6 +59,227 @@ describe('createNotifyServer', () => {
     }
   });
 
+  test('stale client with older generation gets refresh on connect', async () => {
+    const { server, attachToHttpServer, setBuildGeneration } =
+      await createNotifyServer();
+
+    // Simulate that the server has been restarted and is now serving build
+    // generation 5. A client that held open a tab from generation 2 reconnects
+    // and should be told to refresh immediately.
+    setBuildGeneration(5);
+
+    const httpServer = http.createServer();
+    const detach = attachToHttpServer(httpServer);
+
+    await new Promise<void>((resolve, reject) => {
+      httpServer.listen(0, '127.0.0.1', resolve);
+      httpServer.once('error', reject);
+    });
+
+    const address = httpServer.address();
+    const port =
+      typeof address === 'object' && address ? address.port : 0;
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const client = new WebSocket(
+          `ws://127.0.0.1:${port}/__dev_ws?gen=2`,
+        );
+
+        const timer = setTimeout(() => {
+          client.terminate();
+          reject(
+            new Error(
+              'timeout waiting for refresh on stale client reconnect',
+            ),
+          );
+        }, 5000);
+
+        client.on('message', data => {
+          if (String(data) === 'refresh') {
+            clearTimeout(timer);
+            client.once('close', () => resolve());
+            client.close();
+          }
+        });
+
+        client.on('error', error => {
+          clearTimeout(timer);
+          reject(error);
+        });
+      });
+    } finally {
+      detach();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+      await new Promise<void>(resolve => httpServer.close(() => resolve()));
+    }
+  });
+
+  test('current-generation client does NOT get refresh on connect', async () => {
+    const { server, attachToHttpServer, setBuildGeneration } =
+      await createNotifyServer();
+
+    // Both the server and the client are on the same generation.
+    setBuildGeneration(3);
+
+    const httpServer = http.createServer();
+    const detach = attachToHttpServer(httpServer);
+
+    await new Promise<void>((resolve, reject) => {
+      httpServer.listen(0, '127.0.0.1', resolve);
+      httpServer.once('error', reject);
+    });
+
+    const address = httpServer.address();
+    const port =
+      typeof address === 'object' && address ? address.port : 0;
+
+    try {
+      const result = await new Promise<'timeout' | 'refresh'>(
+        resolve => {
+          const client = new WebSocket(
+            `ws://127.0.0.1:${port}/__dev_ws?gen=3`,
+          );
+
+          client.on('open', () => {
+            // If no refresh arrives within 500ms, resolve as timeout (correct).
+            setTimeout(() => {
+              client.terminate();
+              resolve('timeout');
+            }, 500);
+          });
+
+          client.on('message', data => {
+            if (String(data) === 'refresh') {
+              client.terminate();
+              resolve('refresh');
+            }
+          });
+        },
+      );
+
+      // The client should NOT receive a refresh because its generation
+      // matches the server.
+      expect(result).toBe('timeout');
+    } finally {
+      detach();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+      await new Promise<void>(resolve => httpServer.close(() => resolve()));
+    }
+  });
+
+  test('notifies onSaveBusyChange when client sends save-start / save-end', async () => {
+    const { server, attachToHttpServer, onSaveBusyChange } =
+      await createNotifyServer();
+
+    const busyLog: boolean[] = [];
+    const detachSave = onSaveBusyChange(busy => busyLog.push(busy));
+
+    const httpServer = http.createServer();
+    const detach = attachToHttpServer(httpServer);
+
+    await new Promise<void>((resolve, reject) => {
+      httpServer.listen(0, '127.0.0.1', resolve);
+      httpServer.once('error', reject);
+    });
+
+    const address = httpServer.address();
+    const port =
+      typeof address === 'object' && address ? address.port : 0;
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const client = new WebSocket(
+          `ws://127.0.0.1:${port}/__dev_ws`,
+        );
+        const timer = setTimeout(() => {
+          client.terminate();
+          reject(new Error('timeout'));
+        }, 5000);
+
+        client.on('open', () => {
+          client.send('save-start');
+          setTimeout(() => {
+            client.send('save-end');
+            setTimeout(() => {
+              clearTimeout(timer);
+              client.once('close', () => resolve());
+              client.close();
+            }, 100);
+          }, 100);
+        });
+
+        client.on('error', error => {
+          clearTimeout(timer);
+          reject(error);
+        });
+      });
+
+      expect(busyLog).toEqual([true, false]);
+    } finally {
+      detachSave();
+      detach();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+      await new Promise<void>(resolve => httpServer.close(() => resolve()));
+    }
+  });
+
+  test('onSaveBusyChange detach stops receiving updates', async () => {
+    const { server, attachToHttpServer, onSaveBusyChange } =
+      await createNotifyServer();
+
+    const busyLog: boolean[] = [];
+    const detachSave = onSaveBusyChange(busy => busyLog.push(busy));
+    detachSave();
+
+    const httpServer = http.createServer();
+    const detach = attachToHttpServer(httpServer);
+
+    await new Promise<void>((resolve, reject) => {
+      httpServer.listen(0, '127.0.0.1', resolve);
+      httpServer.once('error', reject);
+    });
+
+    const address = httpServer.address();
+    const port =
+      typeof address === 'object' && address ? address.port : 0;
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const client = new WebSocket(
+          `ws://127.0.0.1:${port}/__dev_ws`,
+        );
+        const timer = setTimeout(() => {
+          client.terminate();
+          reject(new Error('timeout'));
+        }, 5000);
+
+        client.on('open', () => {
+          client.send('save-start');
+          setTimeout(() => {
+            client.send('save-end');
+            setTimeout(() => {
+              clearTimeout(timer);
+              client.once('close', () => resolve());
+              client.close();
+            }, 100);
+          }, 100);
+        });
+
+        client.on('error', error => {
+          clearTimeout(timer);
+          reject(error);
+        });
+      });
+
+      expect(busyLog).toEqual([]);
+    } finally {
+      detach();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+      await new Promise<void>(resolve => httpServer.close(() => resolve()));
+    }
+  });
+
   test('attachToHttpServer detach removes upgrade handler', async () => {
     const { server, attachToHttpServer } = await createNotifyServer();
 
